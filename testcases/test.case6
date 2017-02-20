@@ -1,0 +1,26 @@
+<<module arraysum>>
+takes input[list:array[1..20] of real];
+returns [sum:real];
+start
+	declare s: real;
+	s := 0.0;
+	declare index : integer;
+	for (index in 1..20)
+	start
+		s := s + list[index];
+	end
+	sum := s;
+end
+
+<<driver Program>>
+start
+	declare num, k:integer;
+	declare A:array [1..10] of integer;
+	for( k in 1..10)
+	start
+		A[k]:=(num – k)*(num-k);
+		print(A[k]);
+	end
+	[num]:=use module arraysum with parameters A;
+	print(num);
+end
