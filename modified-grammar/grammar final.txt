@@ -1,0 +1,80 @@
+
+
+<program>				:		<moduleDeclarations> <otherModules> <driverModule> <otherModules>
+<moduleDeclarations>	:		<moduleDeclaration> <moduleDeclarations> | ε
+<moduleDeclaration>		: 		DECLARE MODULE ID SEMICOL
+<otherModules>			:		<module> <otherModules> | ε
+
+<driverModule> 			: 		DEF DRIVER PROGRAM ENDDEF <moduleDef>
+<module>  				: 		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef>
+
+<ret> 					: 		RETURNS SQBO <output_plist> SQBC SEMICOL | ε
+
+<!-- left rec -->
+<input_plist> 			:		ID COLON <dataType> <input_plistRec>
+<input_plistRec> 		:		COMMA ID COLON <dataType> <input_plistRec> | ε
+
+<!-- left rec -->
+<output_plist> 			:		ID COLON <type> <output_plistRec>
+<output_plistRec> 		:		COMMA ID COLON <type> <output_plistRec> | ε
+
+<type> 					:		INTEGER | REAL | BOOLEAN
+<dataType> 				: 		<type> | ARRAY SQBO <range> SQBC of <type>
+
+<moduleDef> 			: 		START <statements> END
+
+<statements> 			:		<statement> <statements> | ε
+<statement> 			:		<ioStmt> | <simpleStmt> | <declareStmt> | <condionalStmt> | <iterativeStmt> | SEMICOL
+
+<ioStmt> 				:		GET_VALUE BO ID <whichId> BC SEMICOL | PRINT BO <print_val> BC SEMICOL
+<print_val> 			:		ID <whichId> | NUM | RNUM | TRUE | FALSE
+<whichId> 				: 		SQBO <index> SQBC | ε
+<index> 				:		NUM | ID
+
+<simpleStmt> 			:		<assignmentStmt> | <moduleReuseStmt>
+<assignmentStmt> 		:		ID <whichId> ASSIGNOP <expression> SEMICOL
+
+<moduleReuseStmt> 		:		<optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
+<optional> 				:		SQBO <idList> SQBC ASSIGNOP | ε
+
+<!-- left rec -->
+<idList> 				:		ID <idListRec>
+<idListRec> 			:		COMMA ID <idListRec> | ε 
+
+<expression> 			:		<arithmeticExpr> | <booleanExpr>
+
+<!-- left rec -->
+<arithmeticExpr> 		:		<term> <arithmeticExprRec>
+<arithmeticExprRec> 	:		<pm> <term> <arithmeticExprRec> | ε 
+
+<!-- left rec -->
+<term> 					:		<factor> <termRec>
+<termRec> 				:		<md> <factor> <termRec> | ε
+
+<factor> 				:		BO <arithmeticExpr> BC | <var>
+<var> 					:		ID <whichId> | NUM | RNUM
+<pm> 					:		PLUS | MINUS
+<md> 					:		MUL | DIV
+
+<!-- left rec -->
+<booleanExpr> 			:		<booleanSegment> <booleanExprRec>
+<booleanExprRec> 		:		<logicalOp> <booleanSegment> <booleanExprRec> | ε
+
+<logicalOp> 			:		AND | OR
+<booleanSegment> 		:		<arithmeticExpr> <relationalOp> <arithmeticExpr>
+<booleanSegment> 		:		BO <booleanExpr> BC
+<relationalOp> 			: 		LT | LE | GT | GE | EQ | NE
+
+<declareStmt> 			:		DECLARE <idList> COLON <dataType> SEMICOL
+
+<condionalStmt> 		:		SWITCH BO <expression> BC START <caseStmt><default> END
+<caseStmt> 				:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmt>
+<value> 				:		NUM | TRUE | FALSE
+<default> 				:		DEFAULT COLON <statements> BREAK SEMICOL | ε
+
+<iterativeStmt> 		:		FOR BO ID IN <range> BC START <statements> END | WHILE BO <booleanExpr> BC START <statements> END
+<range> 				:		NUM RANGEOP NUM 
+
+
+
+
