@@ -9,16 +9,18 @@
 typedef struct {
 	int id;
 	char val[30];
+	int lno;
 } token;
 
 
-token * createToken(int id, char * val) {
+token * createToken(int id, char * val, int lno) {
 	token * nw;
 	nw = malloc(sizeof(token)); 
 
 	memset(nw->val, 0, sizeof(nw->val));
 
 	nw->id = id;
+	nw->lno = lno;
 	strcpy(nw->val, val);
 
 	return nw;
@@ -49,12 +51,13 @@ int getStream() {
 int globalPtr = 0;
 
 char getChar() {
-	char stream[] = {60, 60, 100, 114, 105, 118, 101, 114, 32, 112, 114, 111, 103, 114, 97, 109, 62, 62, 10, 115, 116, 97, 114, 116, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 97, 44, 98, 58, 105, 110, 116, 101, 103, 101, 114, 59, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 99, 58, 98, 111, 111, 108, 101, 97, 110, 59, 10, 9, 97, 58, 61, 50, 49, 59, 10, 9, 98, 58, 61, 50, 51, 58, 10, 9, 99, 58, 61, 40, 98, 45, 97, 62, 51, 41, 59, 10, 9, 115, 119, 105, 116, 99, 104, 40, 99, 41, 10, 9, 115, 116, 97, 114, 116, 10, 9, 9, 99, 97, 115, 101, 32, 84, 82, 85, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 9, 99, 97, 115, 101, 32, 70, 65, 76, 83, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 32, 45, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 101, 110, 100, 10, 101, 110, 100, 0, 0};
+	char stream[] = {60, 60, 100, 114, 105, 118, 101, 114, 32, 112, 114, 111, 103, 114, 97, 109, 62, 62, 10, 115, 116, 97, 114, 116, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 97, 44, 98, 58, 105, 110, 116, 101, 103, 101, 114, 59, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 99, 58, 98, 111, 111, 108, 101, 97, 110, 59, 10, 9, 97, 58, 61, 50, 49, 59, 10, 9, 98, 58, 61, 50, 51, 58, 10, 9, 99, 58, 61, 40, 98, 45, 97, 62, 51, 41, 59, 10, 9, 115, 119, 105, 116, 99, 104, 40, 99, 41, 10, 9, 115, 116, 97, 114, 116, 10, 9, 9, 99, 97, 115, 101, 32, 84, 82, 85, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 9, 99, 97, 115, 101, 32, 70, 65, 76, 83, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 32, 45, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 101, 110, 100, 10, 101, 110, 100, 0};
 
 	return stream[globalPtr++];
 }
 
 
+static int lno = 1;
 
 token * retrace(int state, char attr[30]) {
 
@@ -64,34 +67,33 @@ token * retrace(int state, char attr[30]) {
 	// printf("state %d\n", state);
 
 	if(state == 3) {
-		return createToken(36, "");
+		return createToken(36, "", lno);
 	}
 	else if(state == 5) {
-		return createToken(38, "");
+		return createToken(38, "", lno);
 	}
 	else if(state == 8) {
-		return createToken(40, "");
+		return createToken(40, "", lno);
 	}
 	else if(state == 11) {
-		return createToken(46, "");
+		return createToken(46, "", lno);
 	}
 	else if(state == 28) {
-		return createToken(31, attr);
+		return createToken(31, attr, lno);
 	}
 	else if(state == 30 || state == 33) {
-		return createToken(32, attr);
+		return createToken(32, attr, lno);
 	}
 	else if(state == 27 || state == 26) {
-		return createToken(30, attr);
+		return createToken(30, attr, lno);
 	}
 	else {
-		return createToken(64, attr);
+		return createToken(64, attr, lno);
 	}
 
 
 
 }
-
 
 
 
@@ -109,11 +111,16 @@ token * getToken() {
 
 		spot = getChar();
 
-		printf("spot %c\n", spot);
+		printf("spot %d\n", spot);
 
 		if(spot == 0) {
-			state = 26;
-			return createToken(70, "");
+			if(state == 0) {
+				state = 27;
+				return createToken(70, "", lno);
+			}
+			else {
+				return retrace(state, attr);
+			}
 		}
 		else if(commented) {
 			if(spot == '*') {
@@ -132,7 +139,12 @@ token * getToken() {
 		else if(!commented) {
 			if(spot == 10 || spot == 9 || spot == 32) {
 				// printf("got whitespace\n");
+
 				if(state == 0){
+					if(spot == 10){
+						lno++;
+						printf("line increment\n");
+					}
 					continue;
 				}
 				else {
@@ -143,7 +155,7 @@ token * getToken() {
 			else if(spot == '+') {
 				if(state == 0){
 					state = 1;
-					return createToken(34, "");
+					return createToken(34, "", lno);
 				}
 				else if(state == 31) {
 					state = 32;
@@ -155,7 +167,7 @@ token * getToken() {
 			else if(spot == '-') {
 				if(state == 0) {
 					state = 2;
-					return createToken(35, "");
+					return createToken(35, "", lno);
 				}
 				else if(state == 31) {
 					state = 32;
@@ -182,7 +194,7 @@ token * getToken() {
 				}
 				else if(state == 5) {
 					state = 6;
-					return createToken(44, "");
+					return createToken(44, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -194,7 +206,7 @@ token * getToken() {
 				}
 				else if(state == 8) {
 					state = 9;
-					return createToken(45, "");
+					return createToken(45, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -211,7 +223,7 @@ token * getToken() {
 			else if(spot == '/') {
 				if(state == 0) {
 					state = 13;
-					return createToken(37, "");
+					return createToken(37, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -231,7 +243,7 @@ token * getToken() {
 				}	
 				else if(state == 25) {
 					state = 15;
-					return createToken(47, "");
+					return createToken(47, "", lno);
 				}
 				else if(state == 28) {
 					attr[atptr++] = spot;
@@ -244,7 +256,7 @@ token * getToken() {
 			else if(spot == '[') {
 				if(state == 0) {
 					state = 17;
-					return createToken(52, "");
+					return createToken(52, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -253,7 +265,7 @@ token * getToken() {
 			else if(spot == ']') {
 				if(state == 0) {
 					state = 16;
-					return createToken(51, "");
+					return createToken(51, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -262,7 +274,7 @@ token * getToken() {
 			else if(spot == '(') {
 				if(state == 0) {
 					state = 19;
-					return createToken(53, "");
+					return createToken(53, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -271,7 +283,7 @@ token * getToken() {
 			else if(spot == ')') {
 				if(state == 0) {
 					state = 18;
-					return createToken(54, "");
+					return createToken(54, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -283,23 +295,23 @@ token * getToken() {
 				}
 				else if(state == 23) {
 					state = 20;
-					return createToken(43, "");
+					return createToken(43, "", lno);
 				}
 				else if(state == 5) {
 					state = 6;
-					return createToken(39, "");
+					return createToken(39, "", lno);
 				}
 				else if(state == 8) {
 					state = 10;
-					return createToken(41, "");
+					return createToken(41, "", lno);
 				}
 				else if(state == 24) {
 					state = 14;
-					return createToken(42, "");
+					return createToken(42, "", lno);
 				}
 				else if(state == 11) {
 					state = 12;
-					return createToken(50, "");
+					return createToken(50, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -308,7 +320,7 @@ token * getToken() {
 			else if(spot == ',') {
 				if(state == 0) {
 					state = 22;
-					return createToken(49, "");
+					return createToken(49, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -317,7 +329,7 @@ token * getToken() {
 			else if(spot == ';') {
 				if(state == 0) {
 					state = 21;
-					return createToken(48, "");
+					return createToken(48, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -394,8 +406,8 @@ int main(int argc, char  * argv[]) {
 
 	got = getToken();
 	for(int i=0;!(got->id == 64 ||got->id == 70) ;i++) {
+		printf("------------- %d, %s, %d\n", got->id, got->val, got->lno);
 		got = getToken();
-		printf("------------- %d, %s\n", got->id, got->val);
 	}
 
 	// buff[1][BUFF_SIZE] = 0;
