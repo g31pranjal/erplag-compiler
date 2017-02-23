@@ -2,15 +2,12 @@
 #include <string.h>
 #include <unistd.h> 
 #include <stdlib.h> 
+#include "lexerDef.h"
 
-#define BUFF_SIZE 100
+#define BUFF_SIZE 1000
 
+static char * ref[] = {"DECLARE", "MODULE", "PRINT", "USE", "DRIVER", "PROGRAM", "WITH", "TAKES", "INPUT", "PARAMETERS", "AND", "RETURNS", "OR", "FOR", "INTEGER", "REAL", "BOOLEAN", "ARRAY", "START", "END", "GET_VALUE", "IN", "SWITCH", "TRUE", "FALSE", "CASE", "BREAK", "DEFAULT", "WHILE", "OF", "ID", "NUM", "RNUM", "", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GT", "GE", "NE", "EQ", "DEF", "ENDDEF", "COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBC", "SQBO", "BO", "BC", "COMMENTMARK", "", "", "", "", "", "", "", "", "ERROR", "", "", "", "", "", "$"};
 
-typedef struct {
-	int id;
-	char val[30];
-	int lno;
-} token;
 
 
 token * createToken(int id, char * val, int lno) {
@@ -18,44 +15,59 @@ token * createToken(int id, char * val, int lno) {
 	nw = malloc(sizeof(token)); 
 
 	memset(nw->val, 0, sizeof(nw->val));
+	memset(nw->lxm, 0, sizeof(nw->lxm));
 
 	nw->id = id;
 	nw->lno = lno;
 	strcpy(nw->val, val);
+	strcpy(nw->lxm, ref[id]);
 
 	return nw;
 }
 
 
-static char buff[2][BUFF_SIZE];
-static int line = 0;
-static FILE * fp = NULL;
+
+// static char buff[2][BUFF_SIZE];
+// static int line = 0;
+// static FILE * fp = NULL;
 
 
-int getStream() {
+// int getStream() {
 
-	if(fp == NULL) {
-		// opening the file for read 
-		char * filename = "../testcases/test.case1";	
-		fp = fopen(filename, "r");
-	}
+// 	if(fp == NULL) {
+// 		// opening the file for read 
+// 		char * filename = "../testcases/test.case1";	
+// 		fp = fopen(filename, "r");
+// 	}
 
-	int readChars = fread(buff[(line+1)%2], 1, BUFF_SIZE, fp);
-	buff[(line+1)%2][BUFF_SIZE] = '\0';
+// 	int readChars = fread(buff[(line+1)%2], 1, BUFF_SIZE, fp);
+// 	buff[(line+1)%2][BUFF_SIZE] = '\0';
 	
-	return NULL;	
+// 	return NULL;	
 	
+// }
+
+
+static int globalPtr = 0;
+static char * filename = "../testcases/test.case2";
+static FILE *fp = NULL ;
+static char buff[BUFF_SIZE];
+
+int init() {
+
+	fp = fopen(filename, "r");
+	
+	memset(buff, 0, BUFF_SIZE);
+	fread(buff, 1, BUFF_SIZE, fp);
+	
+	return 0;
+
 }
 
-
-int globalPtr = 0;
 
 char getChar() {
-	char stream[] = {60, 60, 100, 114, 105, 118, 101, 114, 32, 112, 114, 111, 103, 114, 97, 109, 62, 62, 10, 115, 116, 97, 114, 116, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 97, 44, 98, 58, 105, 110, 116, 101, 103, 101, 114, 59, 10, 9, 100, 101, 99, 108, 97, 114, 101, 32, 99, 58, 98, 111, 111, 108, 101, 97, 110, 59, 10, 9, 97, 58, 61, 50, 49, 59, 10, 9, 98, 58, 61, 50, 51, 58, 10, 9, 99, 58, 61, 40, 98, 45, 97, 62, 51, 41, 59, 10, 9, 115, 119, 105, 116, 99, 104, 40, 99, 41, 10, 9, 115, 116, 97, 114, 116, 10, 9, 9, 99, 97, 115, 101, 32, 84, 82, 85, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 9, 99, 97, 115, 101, 32, 70, 65, 76, 83, 69, 58, 32, 10, 9, 9, 9, 98, 58, 61, 32, 45, 49, 48, 48, 59, 10, 9, 9, 9, 98, 114, 101, 97, 107, 59, 10, 9, 101, 110, 100, 10, 101, 110, 100, 0};
-
-	return stream[globalPtr++];
+	return buff[globalPtr++];
 }
-
 
 static int lno = 1;
 
@@ -63,8 +75,6 @@ token * retrace(int state, char attr[30]) {
 
 	// get the pointer back by 1
 	globalPtr--;
-	// printf("entered retracing \n");
-	// printf("state %d\n", state);
 
 	if(state == 3) {
 		return createToken(36, "", lno);
@@ -91,8 +101,6 @@ token * retrace(int state, char attr[30]) {
 		return createToken(64, attr, lno);
 	}
 
-
-
 }
 
 
@@ -111,7 +119,7 @@ token * getToken() {
 
 		spot = getChar();
 
-		printf("spot %d\n", spot);
+		// printf("spot %d\n", spot);
 
 		if(spot == 0) {
 			if(state == 0) {
@@ -402,64 +410,17 @@ token * getToken() {
 
 int main(int argc, char  * argv[]) {
 
+	init();
+
 	token * got;
 
 	got = getToken();
 	for(int i=0;!(got->id == 64 ||got->id == 70) ;i++) {
-		printf("------------- %d, %s, %d\n", got->id, got->val, got->lno);
+		printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
 		got = getToken();
 	}
+	printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
 
-	// buff[1][BUFF_SIZE] = 0;
-
-
-	// buffer initialization
-
-	// int readChars, line = 0;
-
-	// iteration on the number of times 
-	// while(1) {
-		
-	// 	printf("reading line %d : \n", line );
-	// 	readChars = fread(buff[line%2], 1, BUFF_SIZE, fp);
-
-	// 	if(readChars == -1) {
-	// 		printf("reading error.. quitting !\n");
-	// 		break;
-
-	// 	}
-
-	// }
-
-	
-	// printf("%d\n", readChars);
-
-	// printf("reading buff 2\n");
-	
-	// printf("%d\n", readChars);
-
-	// printf("printing ... \n");
-
-	// for(int i=0;i<=BUFF_SIZE;i++) {
-	// 	printf("%d,%c ",buff[0][i], buff[0][i]);
-	// }
-
-	// printf("\n");
-
-	// for(int i=0;i<=BUFF_SIZE;i++) {
-	// 	printf("%d,%c ",buff[1][i], buff[1][i]);
-	// }
-
-	// printf("\n");
-
-	// int i=0,j=0;
-
-	// for(i=0;i<2;i++) {
-	// 	for(j=0;j<1025;j++) {
-	// 		printf("%c,", buff[i][j]);
-	// 	}
-	// 	printf("\n\n");
-	// }
 
 }
 
