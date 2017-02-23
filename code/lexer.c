@@ -64,10 +64,10 @@ int init() {
 
 }
 
-
 char getChar() {
 	return buff[globalPtr++];
 }
+
 
 static int lno = 1;
 

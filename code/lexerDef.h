@@ -11,5 +11,4 @@ typedef struct {
 	int lno;
 } token;
 
-
 #endif
