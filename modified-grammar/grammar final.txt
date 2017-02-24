@@ -51,7 +51,7 @@
 <expression> 			:		<arithmeticExpr>
 <expression> 			:		<booleanExpr>
 <arithmeticExpr> 		:		<term> <arithmeticExprRec>
-<arithmeticExprRec> 	:		<pm> <term> <arithmeticExprRec> | ε 
+<arithmeticExprRec> 	:		<pm> <term> <arithmeticExprRec>
 <arithmeticExprRec> 	:		ε 
 <term> 					:		<factor> <termRec>
 <termRec> 				:		<md> <factor> <termRec>
@@ -79,7 +79,7 @@
 <relationalOp> 			: 		EQ
 <relationalOp> 			: 		NE
 <declareStmt> 			:		DECLARE <idList> COLON <dataType> SEMICOL
-<condionalStmt> 		:		SWITCH BO <expression> BC START <caseStmt><default> END
+<condionalStmt> 		:		SWITCH BO <expression> BC START <caseStmt> <default> END
 <caseStmt> 				:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmt>
 <value> 				:		NUM
 <value> 				:		TRUE
