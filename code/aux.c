@@ -28,15 +28,20 @@ int printGrammar(grammar * gr) {
 	element * node;
 
 	for(int i=0;i<26;i++) {
-		printf("%d\t", i);
+		printf("%d\n", i);
 		node = gr->trm[i];
 		while(node != NULL) {
 			printf("%x, %s [ ", node, node->val);
 			int i;
-			for(i=0;i<node->occ_num;i++) {
-				printf("%d, ", node->occurances[i]);
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
 			}
-			printf(" ] -> ");
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
 			node = node->next;
 		}
 		printf("\n");
@@ -46,15 +51,20 @@ int printGrammar(grammar * gr) {
 	printf("num of non terminals : %d\n", gr->ntrm_num);
 
 	for(int i=0;i<26;i++) {
-		printf("%d\t", i);
+		printf("%d\n", i);
 		node = gr->ntrm[i];
 		while(node != NULL) {
 			printf("%x, %s [", node, node->val);
 			int i;
-			for(i=0;i<node->occ_num;i++) {
-				printf("%d, ", node->occurances[i]);
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
 			}
-			printf(" ] -> ");
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
 			node = node->next;
 		}
 		printf("\n");

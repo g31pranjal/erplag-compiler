@@ -59,7 +59,7 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 
 	while(node != NULL) {
 		if(strcmp(node->val, trm_name) == 0) {
-			node->occurances[node->occ_num++] = gr->rule_num;
+			node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
 			return node;
 		}
 		node = node->next;
@@ -69,12 +69,14 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	nw = (element *)malloc(sizeof(element));
 	nw->type = 0;
 	for(i=0;i<20;i++) {
-		nw->occurances[i] = 0;
+		nw->occ_lhs[i] = 0;
+		nw->occ_lhs[i] = 0;
 	}
-	nw->occ_num = 0;
+	nw->occ_lhs_num = 0;
+	nw->occ_rhs_num = 0;
 	
 	strcpy(nw->val, trm_name);
-	nw->occurances[nw->occ_num++] = gr->rule_num;
+	nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
 
 	nw->next = gr->trm[key];
 	gr->trm[key] = nw;
@@ -84,7 +86,7 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	return nw;
 }
 
-element * searchForNonTerminal(grammar * gr, char * trm_name) {
+element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
 	
 	int key = ((int)trm_name[1])-97, i;
 
@@ -92,7 +94,10 @@ element * searchForNonTerminal(grammar * gr, char * trm_name) {
 
 	while(node != NULL) {
 		if(strcmp(node->val, trm_name) == 0) {
-			node->occurances[node->occ_num++] = gr->rule_num;
+			if(orig)
+				node->occ_lhs[node->occ_lhs_num++] = gr->rule_num;
+			else
+				node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
 			return node;
 		}
 		node = node->next;
@@ -102,13 +107,18 @@ element * searchForNonTerminal(grammar * gr, char * trm_name) {
 	nw = (element *)malloc(sizeof(element));
 	nw->type = 1;
 	for(i=0;i<25;i++) {
-		nw->occurances[i] = 0;
+		nw->occ_lhs[i] = 0;
+		nw->occ_rhs[i] = 0;
 	}
-	nw->occ_num = 0;
+	nw->occ_lhs_num = 0;
+	nw->occ_rhs_num = 0;
 	
 	strcpy(nw->val, trm_name);
-	nw->occurances[nw->occ_num++] = gr->rule_num;
-	
+	if(orig)
+		nw->occ_lhs[nw->occ_lhs_num++] = gr->rule_num;
+	else
+		nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
+
 	nw->next = gr->ntrm[key];
 	gr->ntrm[key] = nw;
 	gr->ntrm_num++;
@@ -116,16 +126,19 @@ element * searchForNonTerminal(grammar * gr, char * trm_name) {
 	return nw;
 }
 
+
 int fillRuleLHS(grammar * gr, rule * rl, char * ntrm) {
-	rl->lhs.data = searchForNonTerminal(gr, ntrm);
+	rl->lhs.data = searchForNonTerminal(gr, ntrm, 1);
+	return 0;
 }
+
 
 int fillRuleRHS(grammar * gr, rule * rl, char * str) {
 
 	element * ref;
 
 	if(str[0] == '<') 
-		ref = searchForNonTerminal(gr, str);
+		ref = searchForNonTerminal(gr, str, 0);
 	else
 		ref = searchForTerminal(gr, str);
 
@@ -145,7 +158,6 @@ int fillRuleRHS(grammar * gr, rule * rl, char * str) {
 	}
 
 	return 0;
-
 }
 
 grammar * readGrammarFromFile(char * filename) {
@@ -203,8 +215,6 @@ grammar * readGrammarFromFile(char * filename) {
 	}
 
 	return gr;
-
-
 }
 
 
@@ -213,6 +223,8 @@ int main() {
 	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 
 	printGrammar(gr);
+
+	// printf("%d\n", sizeof(ruleSeg));
 
 	return 0;
 }
