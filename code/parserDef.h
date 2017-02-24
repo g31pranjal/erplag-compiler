@@ -10,6 +10,8 @@ struct el{
 
 	char val[20];
 	int type;
+	int occurances[20];
+	int occ_num;
 
 	element * next;
 
@@ -44,9 +46,12 @@ typedef struct {
 
 	rule * top;
 	rule * bot;
+	int rule_num;
 
 	element * trm[26]; 
-	element * ntrm[26]; 
+	int trm_num;
+	element * ntrm[26];
+	int ntrm_num; 
 
 } grammar;
 
