@@ -1,19 +1,19 @@
 <program>				:		<moduleDeclarations> <otherModules> <driverModule> <otherModules>
 <moduleDeclarations>	:		<moduleDeclaration> <moduleDeclarations>
-<moduleDeclarations>	:		ε
+<moduleDeclarations>	:		EMPTY
 <moduleDeclaration>		: 		DECLARE MODULE ID SEMICOL
 <otherModules>			:		<module> <otherModules>
-<otherModules>			:		ε
+<otherModules>			:		EMPTY
 <driverModule> 			: 		DEF DRIVER PROGRAM ENDDEF <moduleDef>
 <module>  				: 		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef>
 <ret> 					: 		RETURNS SQBO <output_plist> SQBC SEMICOL
-<ret> 					: 		ε
+<ret> 					: 		EMPTY
 <input_plist> 			:		ID COLON <dataType> <input_plistRec>
 <input_plistRec> 		:		COMMA ID COLON <dataType> <input_plistRec>
-<input_plistRec> 		:		ε
+<input_plistRec> 		:		EMPTY
 <output_plist> 			:		ID COLON <type> <output_plistRec>
 <output_plistRec> 		:		COMMA ID COLON <type> <output_plistRec>
-<output_plistRec> 		:		ε
+<output_plistRec> 		:		EMPTY
 <type> 					:		INTEGER
 <type> 					:		REAL
 <type> 					:		BOOLEAN
@@ -21,7 +21,7 @@
 <dataType> 				: 		ARRAY SQBO <range> SQBC OF <type>
 <moduleDef> 			: 		START <statements> END
 <statements> 			:		<statement> <statements>
-<statements> 			:		ε
+<statements> 			:		EMPTY
 <statement> 			:		<ioStmt>
 <statement> 			:		<simpleStmt>
 <statement> 			:		<declareStmt>
@@ -36,7 +36,7 @@
 <print_val> 			:		TRUE
 <print_val> 			:		FALSE
 <whichId> 				: 		SQBO <index> SQBC
-<whichId> 				: 		ε
+<whichId> 				: 		EMPTY
 <index> 				:		NUM
 <index> 				:		ID
 <simpleStmt> 			:		<assignmentStmt>
@@ -44,18 +44,18 @@
 <assignmentStmt> 		:		ID <whichId> ASSIGNOP <expression> SEMICOL
 <moduleReuseStmt> 		:		<optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
 <optional> 				:		SQBO <idList> SQBC ASSIGNOP
-<optional> 				:		ε
+<optional> 				:		EMPTY
 <idList> 				:		ID <idListRec>
 <idListRec> 			:		COMMA ID <idListRec>
-<idListRec> 			:		ε 
+<idListRec> 			:		EMPTY 
 <expression> 			:		<arithmeticExpr>
 <expression> 			:		<booleanExpr>
 <arithmeticExpr> 		:		<term> <arithmeticExprRec>
 <arithmeticExprRec> 	:		<pm> <term> <arithmeticExprRec>
-<arithmeticExprRec> 	:		ε 
+<arithmeticExprRec> 	:		EMPTY 
 <term> 					:		<factor> <termRec>
 <termRec> 				:		<md> <factor> <termRec>
-<termRec> 				:		ε
+<termRec> 				:		EMPTY
 <factor> 				:		BO <arithmeticExpr> BC
 <factor> 				:		<var>
 <var> 					:		ID <whichId>
@@ -67,7 +67,7 @@
 <md> 					:		DIV
 <booleanExpr> 			:		<booleanSegment> <booleanExprRec>
 <booleanExprRec> 		:		<logicalOp> <booleanSegment> <booleanExprRec>
-<booleanExprRec> 		:		ε
+<booleanExprRec> 		:		EMPTY
 <logicalOp> 			:		AND
 <logicalOp> 			:		OR
 <booleanSegment> 		:		<arithmeticExpr> <relationalOp> <arithmeticExpr>
@@ -85,11 +85,7 @@
 <value> 				:		TRUE
 <value> 				:		FALSE
 <default> 				:		DEFAULT COLON <statements> BREAK SEMICOL
-<default> 				:		ε
+<default> 				:		EMPTY
 <iterativeStmt> 		:		FOR BO ID IN <range> BC START <statements> END
 <iterativeStmt> 		:		WHILE BO <booleanExpr> BC START <statements> END
-<range> 				:		NUM RANGEOP NUM 
-
-
-
-
+<range> 				:		NUM RANGEOP NUM

@@ -8,7 +8,7 @@ typedef struct el element;
 
 struct el{
 
-	char val[20];
+	char val[25];
 	int type;
 	int occurances[20];
 	int occ_num;
