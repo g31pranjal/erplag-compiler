@@ -31,7 +31,7 @@ int printGrammar(grammar * gr) {
 		printf("%d\n", i);
 		node = gr->trm[i];
 		while(node != NULL) {
-			printf("%x, %s [ ", node, node->val);
+			printf("%lld, %x, %s [ ", node->first, node, node->val);
 			int i;
 			for(i=0;i<node->occ_lhs_num;i++) {
 				printf("%d, ", node->occ_lhs[i]);
@@ -54,7 +54,7 @@ int printGrammar(grammar * gr) {
 		printf("%d\n", i);
 		node = gr->ntrm[i];
 		while(node != NULL) {
-			printf("%x, %s [", node, node->val);
+			printf("%lld, %x, %s [", node->first, node, node->val);
 			int i;
 			for(i=0;i<node->occ_lhs_num;i++) {
 				printf("%d, ", node->occ_lhs[i]);

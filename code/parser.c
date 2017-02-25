@@ -5,17 +5,30 @@
 
 #include "aux.c"
 
+unsigned long long getUniqueID(char * trm) {
+	unsigned long long i = 1;
+	int j = 0;
+	while(strcmp(ref[j], trm) != 0) {
+		i *= 2l;
+		j++;
+	}
+
+	return i;
+}
+
+
 grammar * createGrammar() {
 	grammar * nw;
 	nw = (grammar *)malloc(sizeof(grammar));
-	nw->top = NULL;
-	nw->bot = NULL;
 
 	int i;
 	for(i=0;i<26;i++) {
 		nw->trm[i] = NULL;
 		nw->ntrm[i] = NULL;
 	}
+
+	nw->top = NULL;
+	nw->bot = NULL;
 	
 	nw->trm_num = 0;
 	nw->ntrm_num = 0;
@@ -23,6 +36,7 @@ grammar * createGrammar() {
 
 	return nw;
 }
+
 
 rule * addRuleToGrammar(grammar * gr) {
 
@@ -74,6 +88,8 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	}
 	nw->occ_lhs_num = 0;
 	nw->occ_rhs_num = 0;
+	nw->follow = 0;
+	nw->first = getUniqueID(trm_name);
 	
 	strcpy(nw->val, trm_name);
 	nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
@@ -210,21 +226,191 @@ grammar * readGrammarFromFile(char * filename) {
 			}
 			ptr++;
 		}
-
 		memset(buf, 0, 300);
 	}
+	free(buf);
+	fclose(fp);
 
 	return gr;
 }
+
+
+int dismantleGrammar(grammar * gr) {
+
+	int i;
+	element * node, * toFree;
+
+	int freed = 0;
+	size_t sz = 0;
+
+	for(i=0;i<26;i++) {
+		node = gr->trm[i];
+		while(node != NULL) {
+			toFree = node;
+			node = node->next;
+			free(toFree);
+		}
+	}
+
+	for(i=0;i<26;i++) {
+		node = gr->ntrm[i];
+		while(node != NULL) {
+			toFree = node;
+			node = node->next;
+			free(toFree);
+		}
+	}
+
+	rule * rl = gr->top, * rltf;
+	ruleSeg * rs, * rstf;
+
+	while(rl != NULL) {
+		rs = rl->rhstop;
+		while(rs != NULL) {
+			rstf = rs;
+			rs = rs->next;
+			free(rstf);
+		}
+		rltf = rl;
+		rl = rl->next;
+		free(rltf);
+	}
+	free(gr);
+
+	return 0;
+}
+
+
+rule * fetchRuleFromGrammar(grammar * gr, int ruleno) {
+
+	int i = 1;
+	rule * rl = gr->top;
+
+	while(i<=ruleno) {
+		if(i == ruleno)
+			return rl;
+		i++;
+		rl = rl->next;
+	}
+	return NULL;
+}
+
+void printSetValues(unsigned long long val) {
+
+	int exp = 0;
+	unsigned long long trace = 1;
+
+	while( val != 0 ) {
+
+		// printf("%lld, %lld\n", val, trace);
+
+		if( (val | trace) == val) {
+			printf("%s, ", ref[exp]);
+			val = val ^ trace;
+		}
+		trace = trace*2;
+		exp++;
+	}
+	printf("\n");
+
+}
+
+
+int calculateFirstSets(grammar * gr) {
+
+	int leftFollows = gr->ntrm_num, i, j, notPossible;
+	element * nt, * rhs_ele;
+	rule * rl;
+	ruleSeg * rs;
+
+	unsigned long long nt_fst, seg_fst, empty = 8589934592l; 
+
+	while(leftFollows) {
+
+		// printf("left :: %d\n", leftFollows);
+
+		for(i=0;i<26;i++) {
+			nt = gr->ntrm[i];
+			while(nt != NULL) {
+				
+				if(nt->first == 0) {
+					
+					nt_fst = 0;
+					notPossible = 0;
+
+					// iterating over all the rules with nt on lhs
+					for(j=0;j<nt->occ_lhs_num;j++) {
+						// fetching the rule from the grammar
+						rl = fetchRuleFromGrammar(gr, nt->occ_lhs[j]);
+						
+						rs = rl->rhstop;
+						while(rs != NULL) {
+							rhs_ele = rs->data;
+							seg_fst = rhs_ele->first;
+							
+							if(seg_fst == empty && rs == rl->rhstop) {
+								// first token is an 'EMPTY'
+								nt_fst = nt_fst | seg_fst;
+							}
+							else if(rhs_ele->first == 0) {
+								notPossible = 1;
+								break;
+							}
+							else {
+								// if EMPTY is not there 
+								if( (seg_fst & (~empty)) == seg_fst ) {
+									nt_fst = nt_fst | seg_fst;
+									break;
+								}
+								else {
+									seg_fst = seg_fst & (~empty);
+									nt_fst = nt_fst | seg_fst;
+								}
+							}
+
+							rs = rs->next;
+						}
+
+						if(notPossible)
+							break;
+						else if(rs == NULL) {
+							nt_fst = nt_fst | empty;
+						}
+						
+					}
+
+					if(j == nt->occ_lhs_num) {
+						// all rules are done 
+						printf("%s\n", nt->val);
+						printSetValues(nt_fst);
+						nt->first = nt_fst;
+						leftFollows--;
+					}
+					
+				}
+				nt = nt->next;
+			}
+		}
+	}
+	return 0;
+}
+
 
 
 int main() {
 
 	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 
-	printGrammar(gr);
+	
+	calculateFirstSets(gr);
 
-	// printf("%d\n", sizeof(ruleSeg));
+
+
+	// printGrammar(gr);
+	
+	// dismantleGrammar(gr);
+
+	// calculateFirstSets(gr);
 
 	return 0;
 }

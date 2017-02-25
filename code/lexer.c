@@ -5,6 +5,101 @@
 #include "lexerDef.h"
 
 #define BUFF_SIZE 1000
+#define SIZE 13
+
+struct Node {
+	int num;
+	char * value;
+	struct Node * next;
+};
+
+struct Node1 {
+	int key;
+	struct Node * next;
+};
+
+
+struct Node1 * hashTable[SIZE];
+
+
+struct Node * newNode(char * value,int num) {
+	struct Node * nd=(struct Node *) malloc(sizeof(struct Node));
+	if(nd==NULL) {
+		return NULL;
+	}
+
+	nd->value=value;
+	nd->num=num;
+	nd->next=NULL;
+
+	return nd;
+}
+
+struct Node1 * newNode1(int key) {
+
+	struct Node1 * nd=(struct Node1 *) malloc(sizeof(struct Node1));
+	if(nd==NULL) {
+		return NULL;
+	}
+
+	nd->key=key;
+	nd->next=NULL;
+
+	return nd;
+}
+
+int computeHashFunction(char * value) {
+	int key=0;
+	int i=0;
+	int len=strlen(value);
+
+	for(i=0;i<len;i++) {
+		key=key*31+ value[i];
+		key=key%SIZE;
+	}
+
+	key=key%SIZE;
+	return key;
+}
+
+
+
+void insert(char * value, int num) {
+
+	int key=computeHashFunction(value);
+
+	if(hashTable[key]==NULL) {
+		struct Node1 * nd=newNode1(key);
+		hashTable[key]=nd;
+		struct Node * el=newNode(value,num);
+		nd->next=el;
+		return;
+	}
+	else {
+		struct Node * o=hashTable[key]->next;
+		struct Node * el=newNode(value,num);
+		hashTable[key]->next=el;
+		el->next=o;
+		return;
+	}
+ }
+
+
+int search(char * value) {
+	int key=computeHashFunction(value);
+	if(hashTable[key]==NULL)
+		return -1;
+	else {
+		struct Node * nd=hashTable[key]->next;
+		while(nd!=NULL) {
+			if(strcmp(nd->value, value)==0)
+				return nd->num;
+			nd=nd->next;
+		}
+	}
+	return -1;
+}
+
 
 token * createToken(int id, char * val, int lno) {
 	token * nw;
@@ -91,7 +186,11 @@ token * retrace(int state, char attr[30]) {
 		return createToken(32, attr, lno);
 	}
 	else if(state == 27 || state == 26) {
-		return createToken(30, attr, lno);
+		int val=search(attr);
+		if(val>=0)
+			return createToken(val, "", lno);
+		else
+			return createToken(30, attr, lno);
 	}
 	else {
 		return createToken(64, attr, lno);
@@ -147,7 +246,6 @@ token * getToken() {
 				if(state == 0){
 					if(spot == 10){
 						lno++;
-						printf("line increment\n");
 					}
 					continue;
 				}
@@ -405,6 +503,37 @@ token * getToken() {
 
 
 int main(int argc, char  * argv[]) {
+
+	insert("integer",14); 
+	insert("real",15);
+	insert("boolean",16);
+	insert("of",29);
+	insert("array",17);
+	insert("start",18);
+	insert("end",19);
+	insert("declare",0);
+	insert("module",1);
+	insert("driver",4);
+	insert("program",5);
+	insert("get_value",20);
+	insert("print",2);
+	insert("use",3);
+	insert("with",6);
+	insert("parameters",9);
+	insert("true",23);
+	insert("false",24);
+	insert("takes",7);
+	insert("input",8);
+	insert("returns",11);
+	insert("AND",10);
+	insert("OR",12);
+	insert("for",13);
+	insert("in",21);
+	insert("switch",22);
+	insert("case",25);
+	insert("break",26);
+	insert("default",27);
+	insert("while",28);
 
 	init();
 
