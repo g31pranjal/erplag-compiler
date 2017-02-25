@@ -73,6 +73,27 @@ int printGrammar(grammar * gr) {
 }
 
 
+void printSetValues(unsigned long long val) {
+
+	int exp = 0;
+	unsigned long long trace = 1;
+
+	while( val != 0 ) {
+
+		// printf("%lld, %lld\n", val, trace);
+
+		if( (val | trace) == val) {
+			printf("%s, ", ref[exp]);
+			val = val ^ trace;
+		}
+		trace = trace*2;
+		exp++;
+	}
+	printf("\n");
+
+}
+
+
 // int main() {
 
 

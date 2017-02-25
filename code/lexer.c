@@ -241,8 +241,6 @@ token * getToken() {
 		}
 		else if(!commented) {
 			if(spot == 10 || spot == 9 || spot == 32) {
-				// printf("got whitespace\n");
-
 				if(state == 0){
 					if(spot == 10){
 						lno++;
@@ -250,7 +248,6 @@ token * getToken() {
 					continue;
 				}
 				else {
-					// printf("retracing\n");
 					return retrace(state, attr);
 				}
 			}
