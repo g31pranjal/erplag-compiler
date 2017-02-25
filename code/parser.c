@@ -5,6 +5,7 @@
 
 #include "aux.c"
 
+
 unsigned long long getUniqueID(char * trm) {
 	unsigned long long i = 1;
 	int j = 0;
@@ -29,7 +30,8 @@ grammar * createGrammar() {
 
 	nw->top = NULL;
 	nw->bot = NULL;
-	
+	nw->start = NULL;
+
 	nw->trm_num = 0;
 	nw->ntrm_num = 0;
 	nw->rule_num = 0;
@@ -145,6 +147,9 @@ element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
 
 int fillRuleLHS(grammar * gr, rule * rl, char * ntrm) {
 	rl->lhs.data = searchForNonTerminal(gr, ntrm, 1);
+	if(gr->start == NULL) {
+		gr->start = rl->lhs.data;
+	}
 	return 0;
 }
 
@@ -220,7 +225,7 @@ grammar * readGrammarFromFile(char * filename) {
 				}
 				if(crossed)
 					fillRuleRHS(gr, rl, val);
-				else
+				else 
 					fillRuleLHS(gr, rl, val);
 				ptr--;
 			}
@@ -370,6 +375,8 @@ int calculateFirstSets(grammar * gr) {
 					}
 
 					if(j == nt->occ_lhs_num) {
+						// printf("%s\n", nt->val);
+						// printSetValues(nt_fst);
 						nt->first = nt_fst;
 						leftFollows--;
 					}
@@ -384,10 +391,70 @@ int calculateFirstSets(grammar * gr) {
 
 int calculateFollowSets(grammar * gr) {
 
+	int leftFollows = gr->ntrm_num, i, j, notPossible;
+	element * nt;
+	rule * rl;
+	ruleSeg * rs;
+	unsigned long long dollar = 144115188075855872l, empty = 8589934592l, nt_flw, seg_flw;
+
+	gr->start->follow = dollar;
+	leftFollows--;
+
+	while(leftFollows) {
+
+		for(i=0;i<26;i++) {
+			nt = gr->ntrm[i];
+			while(nt != NULL) {
+
+				if(nt->follow == 0) {
+
+					nt_flw = 0;
+					notPossible = 0;
+
+					for(j=0;j<nt->occ_rhs_num;j++) {
+
+						rl = fetchRuleFromGrammar(gr, nt->occ_rhs[j]);
+						rs = rl->rhstop;
+						
+						while(rs->data != nt)
+							rs = rs->next;
+
+						if(rs->next == NULL) {
+							if(rl->lhs.data != nt) {
+								if(rl->lhs.data->follow == 0) {
+									notPossible = 1;
+									break;
+								}
+								nt_flw = nt_flw | rl->lhs.data->follow;
+							}
+						}
+						else {
+							seg_flw = rs->next->data->first;
+							nt_flw = nt_flw | (seg_flw & ~empty);
+							if(rl->lhs.data != nt && ( (seg_flw | empty) == seg_flw ) ) {
+								if(rl->lhs.data->follow == 0) {
+									notPossible = 1;
+									break;
+								}
+								nt_flw = nt_flw | rl->lhs.data->follow;
+							}
+						}
+
+					}
+
+					if(j == nt->occ_rhs_num) {
+						printf("%s\n", nt->val);
+						printSetValues(nt_flw);
+						nt->follow = nt_flw;
+						leftFollows--;
+					}
+				}
+				nt = nt->next;
+			}
+		}
+	}
 	return 0;
 }
-
-
 
 
 
@@ -397,6 +464,7 @@ int main() {
 	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 	
 	calculateFirstSets(gr);
+	calculateFollowSets(gr);
 
 	// printGrammar(gr);
 	

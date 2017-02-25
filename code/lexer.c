@@ -193,7 +193,7 @@ token * retrace(int state, char attr[30]) {
 			return createToken(30, attr, lno);
 	}
 	else {
-		return createToken(64, attr, lno);
+		return createToken(56, attr, lno);
 	}
 
 }
@@ -219,7 +219,7 @@ token * getToken() {
 		if(spot == 0) {
 			if(state == 0) {
 				state = 27;
-				return createToken(70, "", lno);
+				return createToken(57, "", lno);
 			}
 			else {
 				return retrace(state, attr);
@@ -537,7 +537,7 @@ int main(int argc, char  * argv[]) {
 	token * got;
 
 	got = getToken();
-	for(int i=0;!(got->id == 64 ||got->id == 70) ;i++) {
+	for(int i=0;!(got->id == 56 ||got->id == 57) ;i++) {
 		printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
 		got = getToken();
 	}
