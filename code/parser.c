@@ -248,7 +248,6 @@ int dismantleGrammar(grammar * gr) {
 	int freed = 0;
 	size_t sz = 0;
 
-	// free all the terminals from the hash table 
 	for(i=0;i<26;i++) {
 		node = gr->trm[i];
 		while(node != NULL) {
@@ -258,7 +257,6 @@ int dismantleGrammar(grammar * gr) {
 		}
 	}
 
-	// free all the non terminals from the hash table 
 	for(i=0;i<26;i++) {
 		node = gr->ntrm[i];
 		while(node != NULL) {
@@ -271,7 +269,6 @@ int dismantleGrammar(grammar * gr) {
 	rule * rl = gr->top, * rltf;
 	ruleSeg * rs, * rstf;
 
-	// free all the rules and their rule segments 
 	while(rl != NULL) {
 		rs = rl->rhstop;
 		while(rs != NULL) {
@@ -314,69 +311,48 @@ int calculateFirstSets(grammar * gr) {
 	unsigned long long nt_fst, seg_fst, empty = 8589934592l; 
 
 	while(leftFollows) {
-	// loops till all the firsts are not computed
-
 		for(i=0;i<26;i++) {
-		// loops on the number of buckets in the non-terminal hash table
-
 			nt = gr->ntrm[i];
 			while(nt != NULL) {
-			// loop on the number of non-terminals in the bucket
-
 				if(nt->first == 0) {
-				// if the first has not already been calculated
-
 					nt_fst = 0;
 					notPossible = 0;
-
 					for(j=0;j<nt->occ_lhs_num;j++) {
-					// loops on the number of rules originating for that non-terminal	
-				
 						rl = fetchRuleFromGrammar(gr, nt->occ_lhs[j]);
-						
 						rs = rl->rhstop;
 						while(rs != NULL) {
-						// loops on the number of rule segment on the right side of that rule
-
 							rhs_ele = rs->data;
 							seg_fst = rhs_ele->first;
 
 							if(seg_fst == empty && rs == rl->rhstop) {
-								// if the rule segment is EMPTY and is the only token
 								nt_fst = nt_fst | seg_fst;
 							}
 							else if(rhs_ele->first == 0) {
-								// the first of rule  segment not calculated yet
 								notPossible = 1;
 								break;
 							}
 							else {
 								if( (seg_fst & (~empty)) == seg_fst ) {
-									// if empty is not there in rule-segment, then break.
 									nt_fst = nt_fst | seg_fst;
 									break;
 								} 
 								else {
-									// if empty is present, union non-empty tokens and continue
 									seg_fst = seg_fst & (~empty);
 									nt_fst = nt_fst | seg_fst;
 								}
 							}
 							rs = rs->next;
 						}
-
-						// cannot calculate first for this particular non-terminal
 						if(notPossible)
 							break;
 						else if(rs == NULL) {
-						// if the rule segments get exhausted
 							nt_fst = nt_fst | empty;
 						}
 					}
 
 					if(j == nt->occ_lhs_num) {
-						// printf("%s\n", nt->val);
-						// printSetValues(nt_fst);
+						printf("%s\n", nt->val);
+						printSetValues(nt_fst);
 						nt->first = nt_fst;
 						leftFollows--;
 					}
@@ -401,21 +377,17 @@ int calculateFollowSets(grammar * gr) {
 	leftFollows--;
 
 	while(leftFollows) {
-
 		for(i=0;i<26;i++) {
 			nt = gr->ntrm[i];
 			while(nt != NULL) {
-
 				if(nt->follow == 0) {
-
 					nt_flw = 0;
 					notPossible = 0;
 
 					for(j=0;j<nt->occ_rhs_num;j++) {
-
 						rl = fetchRuleFromGrammar(gr, nt->occ_rhs[j]);
 						rs = rl->rhstop;
-						
+
 						while(rs->data != nt)
 							rs = rs->next;
 
@@ -439,7 +411,6 @@ int calculateFollowSets(grammar * gr) {
 								nt_flw = nt_flw | rl->lhs.data->follow;
 							}
 						}
-
 					}
 
 					if(j == nt->occ_rhs_num) {
@@ -463,10 +434,12 @@ int main() {
 
 	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 	
-	calculateFirstSets(gr);
-	calculateFollowSets(gr);
+	// printf("FIRST *****************************************\n\n\n");
+	// calculateFirstSets(gr);
+	// printf("FOLLOW ****************************************\n\n\n");
+	// calculateFollowSets(gr);
 
-	// printGrammar(gr);
+	printGrammar(gr);
 	
 	dismantleGrammar(gr);
 

@@ -5,101 +5,65 @@
 #include "lexerDef.h"
 
 #define BUFF_SIZE 1000
-#define SIZE 13
+#define HASH_KEYWORD_SIZE 13
 
-struct Node {
+typedef struct nd keyword;
+
+struct nd {
 	int num;
-	char * value;
+	char value[25];
 	struct Node * next;
 };
 
-struct Node1 {
-	int key;
-	struct Node * next;
-};
+keyword * hashedKeywords[HASH_KEYWORD_SIZE];
 
-
-struct Node1 * hashTable[SIZE];
-
-
-struct Node * newNode(char * value,int num) {
-	struct Node * nd=(struct Node *) malloc(sizeof(struct Node));
+keyword * newNode(char * value, int num) {
+	keyword * nd;
+	nd = (keyword *) malloc(sizeof(keyword));
+	
 	if(nd==NULL) {
 		return NULL;
 	}
 
-	nd->value=value;
+	strcpy(nd->value, value);
 	nd->num=num;
 	nd->next=NULL;
 
 	return nd;
 }
 
-struct Node1 * newNode1(int key) {
-
-	struct Node1 * nd=(struct Node1 *) malloc(sizeof(struct Node1));
-	if(nd==NULL) {
-		return NULL;
-	}
-
-	nd->key=key;
-	nd->next=NULL;
-
-	return nd;
-}
-
 int computeHashFunction(char * value) {
-	int key=0;
-	int i=0;
-	int len=strlen(value);
-
-	for(i=0;i<len;i++) {
-		key=key*31+ value[i];
-		key=key%SIZE;
+	int key=0, i;
+	for(i=0;i<strlen(value);i++) {
+		key=key*31 + value[i];
+		key=key%HASH_KEYWORD_SIZE;
 	}
-
-	key=key%SIZE;
 	return key;
 }
 
-
-
 void insert(char * value, int num) {
-
 	int key=computeHashFunction(value);
-
-	if(hashTable[key]==NULL) {
-		struct Node1 * nd=newNode1(key);
-		hashTable[key]=nd;
-		struct Node * el=newNode(value,num);
-		nd->next=el;
-		return;
+	keyword * ele, nxt;
+	ele = newNode(value, num);
+	if(hashedKeywords[key] == NULL) {
+		hashedKeywords[key] = ele;
 	}
 	else {
-		struct Node * o=hashTable[key]->next;
-		struct Node * el=newNode(value,num);
-		hashTable[key]->next=el;
-		el->next=o;
-		return;
+		ele->next = hashedKeywords[key];
+		hashedKeywords[key] = ele;
 	}
- }
-
+}
 
 int search(char * value) {
 	int key=computeHashFunction(value);
-	if(hashTable[key]==NULL)
-		return -1;
-	else {
-		struct Node * nd=hashTable[key]->next;
-		while(nd!=NULL) {
-			if(strcmp(nd->value, value)==0)
-				return nd->num;
-			nd=nd->next;
-		}
+	keyword * nd = hashedKeywords[key];
+	while(nd!=NULL) {
+		if(strcmp(nd->value, value) == 0)
+			return nd->num;
+		nd=nd->next;
 	}
 	return -1;
 }
-
 
 token * createToken(int id, char * val, int lno) {
 	token * nw;

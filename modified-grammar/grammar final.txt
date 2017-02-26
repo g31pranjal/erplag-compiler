@@ -4,7 +4,7 @@
 <moduleDeclaration>		:		DECLARE MODULE ID SEMICOL
 <otherModules>			:		<module> <otherModules>
 <otherModules>			:		EMPTY
-<driverModule>			:		DEF DRIVER PROGRAM ENDDEF <moduleDef>
+<driverModule>			:		DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
 <module>				:		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef>
 <ret>					:		RETURNS SQBO <output_plist> SQBC SEMICOL
 <ret>					:		EMPTY
@@ -48,15 +48,24 @@
 <idList>				:		ID <idListRec>
 <idListRec>				:		COMMA ID <idListRec>
 <idListRec>				:		EMPTY 
-<expression>			:		<arithmeticExpr>
-<expression>			:		<booleanExpr>
+<expression>			:		<arithOrBoolExpr>
+<expression>			:		<negArithStmts>
+<negArithStmts> 		:		MINUS <qt>
+<qt>					:		BO <arithmeticExpr> BC
+<qt>					:		<var>
+<arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
+<arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
+<arithOrBoolExprRec> 	:		EMPTY
+<anyTerm> 				:		<arithmeticExpr> <anyTermRec>
+<anyTermRec> 			:		<relationalOp> <arithmeticExpr> <anyTermRec>
+<anyTermRec> 			:		EMPTY
 <arithmeticExpr>		:		<term> <arithmeticExprRec>
 <arithmeticExprRec>		:		<pm> <term> <arithmeticExprRec>
 <arithmeticExprRec>		:		EMPTY 
 <term>					:		<factor> <termRec>
 <termRec>				:		<md> <factor> <termRec>
 <termRec>				:		EMPTY
-<factor>				:		BO <arithmeticExpr> BC
+<factor>				:		BO <arithOrBoolExprRec> BC
 <factor>				:		<var>
 <var>					:		ID <whichId>
 <var>					:		NUM
@@ -65,13 +74,8 @@
 <pm>					:		MINUS
 <md>					:		MUL
 <md>					:		DIV
-<booleanExpr>			:		<booleanSegment> <booleanExprRec>
-<booleanExprRec>		:		<logicalOp> <booleanSegment> <booleanExprRec>
-<booleanExprRec>		:		EMPTY
 <logicalOp>				:		AND
 <logicalOp>				:		OR
-<booleanSegment>		:		<arithmeticExpr> <relationalOp> <arithmeticExpr>
-<booleanSegment>		:		BO <booleanExpr> BC
 <relationalOp>			:		LT
 <relationalOp>			:		LE
 <relationalOp>			:		GT
@@ -79,13 +83,15 @@
 <relationalOp>			:		EQ
 <relationalOp>			:		NE
 <declareStmt>			:		DECLARE <idList> COLON <dataType> SEMICOL
-<condionalStmt>			:		SWITCH BO <expression> BC START <caseStmt> <default> END
-<caseStmt>				:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmt>
+<condionalStmt>			:		SWITCH BO <expression> BC START <caseStmts> <default> END
+<caseStmts>				:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec>
+<caseStmtsRec>			:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec>
+<caseStmtsRec>			:		EMPTY
 <value>					:		NUM
 <value>					:		TRUE
 <value>					:		FALSE
 <default>				:		DEFAULT COLON <statements> BREAK SEMICOL
 <default>				:		EMPTY
 <iterativeStmt>			:		FOR BO ID IN <range> BC START <statements> END
-<iterativeStmt>			:		WHILE BO <booleanExpr> BC START <statements> END
+<iterativeStmt>			:		WHILE BO <arithOrBoolExprRec> BC START <statements> END
 <range>					:		NUM RANGEOP NUM
