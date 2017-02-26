@@ -6,18 +6,6 @@
 #include "aux.c"
 
 
-unsigned long long getUniqueID(char * trm) {
-	unsigned long long i = 1;
-	int j = 0;
-	while(strcmp(ref[j], trm) != 0) {
-		i *= 2l;
-		j++;
-	}
-
-	return i;
-}
-
-
 grammar * createGrammar() {
 	grammar * nw;
 	nw = (grammar *)malloc(sizeof(grammar));
@@ -94,11 +82,11 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	}
 	nw->occ_lhs_num = 0;
 	nw->occ_rhs_num = 0;
-	nw->follow = 0;
-	nw->first = getUniqueID(trm_name);
 	
 	strcpy(nw->val, trm_name);
 	nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
+	
+	// setFirstAndFollowOfTerminal(nw);
 
 	nw->next = gr->trm[key];
 	gr->trm[key] = nw;
@@ -252,23 +240,29 @@ int dismantleGrammar(grammar * gr) {
 	int freed = 0;
 	size_t sz = 0;
 
-	for(i=0;i<26;i++) {
-		node = gr->trm[i];
-		while(node != NULL) {
-			toFree = node;
-			node = node->next;
-			free(toFree);
-		}
-	}
+	// this will free the structures used in firstAndFollowSets
 
-	for(i=0;i<26;i++) {
-		node = gr->ntrm[i];
-		while(node != NULL) {
-			toFree = node;
-			node = node->next;
-			free(toFree);
-		}
-	}
+	// for(i=0;i<26;i++) {
+	// 	node = gr->trm[i];
+	// 	while(node != NULL) {
+	// 		toFree = node;
+	// 		node = node->next;
+	// 		free(toFree);
+	// 	}
+	// }
+
+	// free(gr->trm);
+
+	// for(i=0;i<26;i++) {
+	// 	node = gr->ntrm[i];
+	// 	while(node != NULL) {
+	// 		toFree = node;
+	// 		node = node->next;
+	// 		free(toFree);
+	// 	}
+	// }
+
+	// free(gr->ntrm);
 
 	rule * rl = gr->top, * rltf;
 	ruleSeg * rs, * rstf;
@@ -432,23 +426,82 @@ int calculateFollowSets(grammar * gr) {
 }
 
 
+int setFirstAndFollowOfTerminal(grammar * gr) {
+
+	
+	return 0;
+}
+
+int numberNonTerminals(grammar * gr) {
+
+	
+	return 0;
+}
+
+
+
+
 firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 
+
+	int i, j = 100;
+	element * nw;
+	
+	// set id of non terminals
+
+	for(i=0;i<26;i++) {
+		nw = gr->ntrm[i];
+		while(nw != NULL) {
+			nw->id = j++;
+			nw = nw->next;
+		}
+	}
+
+	// set first, follow and id of terminals
+
+	for(i=0;i<26;i++) {
+		nw = gr->trm[i];
+		while(nw != NULL) {
+			nw->follow = 0;
+			unsigned long long i = 1;
+			int j = 0;
+			while(strcmp(ref[j], nw->val) != 0) {
+				i = i<<1;
+				j++;
+			}
+			nw->first = i;
+			nw->id = j;
+			nw = nw->next;
+		}
+	}
+	
+	// printf("\n\n FIRST \n\n");
 	calculateFirstSets(gr);
+	// printf("\n\n FOLLOWS \n\n");
 	calculateFollowSets(gr);
 	
-	firstAndFollowSets * nw;
-	nw = (firstAndFollowSets *)malloc(sizeof(firstAndFollowSets));
-	nw->trm = gr->trm;
-	nw->ntrm = gr->ntrm;
-	nw->ntrm_num = gr->ntrm_num;
-	nw->ntrm_num = gr->ntrm_num;
+	firstAndFollowSets * ff;
+	ff = (firstAndFollowSets *)malloc(sizeof(firstAndFollowSets));
+	ff->trm = gr->trm;
+	ff->ntrm = gr->ntrm;
+	ff->trm_num = gr->trm_num;
+	ff->ntrm_num = gr->ntrm_num;
 
-	return nw;
+	return ff;
 	
 }
 
 
+parseTable * initParseTable() {
+
+	parseTable * nw = (parseTable *)malloc(sizeof(parseTable));
+	nw->matrix = (parseToken **)malloc(26*sizeof(parseToken *));
+	int i;
+	for(i = 0;i<26;i++) {
+		nw->matrix[i] = NULL;
+	}
+	return nw;
+}
 
 
 int main() {
@@ -457,11 +510,17 @@ int main() {
 	
 	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
 
+	// printGrammar(gr);
+	dismantleGrammar(gr);
 	printFFSets(ff);
+
 	
-	// dismantleGrammar(gr);
+	
 
 	// calculateFirstSets(gr);
 
 	return 0;
 }
+
+
+

@@ -84,7 +84,7 @@ int printFFSets(firstAndFollowSets * gr) {
 		printf("%d\n", i);
 		node = gr->trm[i];
 		while(node != NULL) {
-			printf("%lld, %lld, %s [ ", node->first, node->follow, node->val);
+			printf("%d, %lld, %lld, %s [ ", node->id, node->first, node->follow, node->val);
 			int i;
 			for(i=0;i<node->occ_lhs_num;i++) {
 				printf("%d, ", node->occ_lhs[i]);
@@ -107,7 +107,7 @@ int printFFSets(firstAndFollowSets * gr) {
 		printf("%d\n", i);
 		node = gr->ntrm[i];
 		while(node != NULL) {
-			printf("%lld, %lld, %s [", node->first, node->follow, node->val);
+			printf("%d, %lld, %lld, %s [",node->id, node->first, node->follow, node->val);
 			int i;
 			for(i=0;i<node->occ_lhs_num;i++) {
 				printf("%d, ", node->occ_lhs[i]);

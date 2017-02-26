@@ -8,11 +8,12 @@ typedef struct el element;
 
 struct el{
 
+	int id;
 	char val[25];
 	int type;
+
 	int occ_lhs[20];
-	int occ_rhs[20];
-	
+	int occ_rhs[20];	
 	int occ_lhs_num;
 	int occ_rhs_num;
 
@@ -51,7 +52,7 @@ struct rl {
 typedef struct {
 
 	rule * top;
-	rule * bot;
+	rule * bot;	
 	int rule_num;
 
 	element ** trm; 
@@ -74,6 +75,22 @@ typedef struct {
 	element * start;
 
 } firstAndFollowSets;
+
+
+typedef struct {
+
+	element * terminals;
+	int ruleNo;
+
+} parseToken;
+
+
+typedef struct {
+
+	parseToken ** matrix;
+
+} parseTable;
+
 
 
 
