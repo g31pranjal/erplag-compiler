@@ -23,6 +23,10 @@ grammar * createGrammar() {
 	nw = (grammar *)malloc(sizeof(grammar));
 
 	int i;
+
+	nw->trm  = (element **)malloc(26*sizeof(element *));
+	nw->ntrm = (element **)malloc(26*sizeof(element *));
+
 	for(i=0;i<26;i++) {
 		nw->trm[i] = NULL;
 		nw->ntrm[i] = NULL;
@@ -193,7 +197,7 @@ grammar * readGrammarFromFile(char * filename) {
 	int line_no = 1, i;
 	
 	grammar * gr;
-	gr = (grammar *)malloc(sizeof(grammar));
+	gr = createGrammar();
 
 	rule * rl;
 
@@ -351,8 +355,8 @@ int calculateFirstSets(grammar * gr) {
 					}
 
 					if(j == nt->occ_lhs_num) {
-						printf("%s\n", nt->val);
-						printSetValues(nt_fst);
+						// printf("%s\n", nt->val);
+						// printSetValues(nt_fst);
 						nt->first = nt_fst;
 						leftFollows--;
 					}
@@ -414,8 +418,8 @@ int calculateFollowSets(grammar * gr) {
 					}
 
 					if(j == nt->occ_rhs_num) {
-						printf("%s\n", nt->val);
-						printSetValues(nt_flw);
+						// printf("%s\n", nt->val);
+						// printSetValues(nt_flw);
 						nt->follow = nt_flw;
 						leftFollows--;
 					}
@@ -428,20 +432,34 @@ int calculateFollowSets(grammar * gr) {
 }
 
 
+firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
+
+	calculateFirstSets(gr);
+	calculateFollowSets(gr);
+	
+	firstAndFollowSets * nw;
+	nw = (firstAndFollowSets *)malloc(sizeof(firstAndFollowSets));
+	nw->trm = gr->trm;
+	nw->ntrm = gr->ntrm;
+	nw->ntrm_num = gr->ntrm_num;
+	nw->ntrm_num = gr->ntrm_num;
+
+	return nw;
+	
+}
+
+
 
 
 int main() {
 
 	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 	
-	// printf("FIRST *****************************************\n\n\n");
-	// calculateFirstSets(gr);
-	// printf("FOLLOW ****************************************\n\n\n");
-	// calculateFollowSets(gr);
+	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
 
-	printGrammar(gr);
+	printFFSets(ff);
 	
-	dismantleGrammar(gr);
+	// dismantleGrammar(gr);
 
 	// calculateFirstSets(gr);
 

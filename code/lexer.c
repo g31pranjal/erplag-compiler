@@ -12,7 +12,7 @@ typedef struct nd keyword;
 struct nd {
 	int num;
 	char value[25];
-	struct Node * next;
+	keyword * next;
 };
 
 keyword * hashedKeywords[HASH_KEYWORD_SIZE];
@@ -150,11 +150,16 @@ token * retrace(int state, char attr[30]) {
 		return createToken(32, attr, lno);
 	}
 	else if(state == 27 || state == 26) {
-		int val=search(attr);
+		int val = search(attr);
 		if(val>=0)
 			return createToken(val, "", lno);
-		else
+		else{
+			if(strlen(attr) > 8) {
+				printf("ERROR_1 : Identifier at line %d is longer the prescribed length\n", lno);
+				return createToken(56, attr, lno);	
+			}
 			return createToken(30, attr, lno);
+		}
 	}
 	else {
 		return createToken(56, attr, lno);
@@ -444,10 +449,10 @@ token * getToken() {
 				}
 			}
 			else {
-				return retrace(state, attr);
+				printf("ERROR_2 : Unknown Symbol %c at line %d\n", spot, lno);
+				return createToken(56, "", lno);
 			}
 		}
-		
 	}
 }
 

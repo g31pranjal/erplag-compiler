@@ -54,14 +54,29 @@ typedef struct {
 	rule * bot;
 	int rule_num;
 
-	element * trm[26]; 
+	element ** trm; 
 	int trm_num;
-	element * ntrm[26];
+	element ** ntrm;
 	int ntrm_num; 
 
 	element * start;
 
 } grammar;
+
+
+typedef struct {
+
+	element ** trm; 
+	int trm_num;
+	element ** ntrm;
+	int ntrm_num; 
+
+	element * start;
+
+} firstAndFollowSets;
+
+
+
 
 
 #endif
