@@ -122,6 +122,25 @@ int printFFSets(firstAndFollowSets * gr) {
 		}
 		printf("\n");
 	}
+}
+
+
+int printParseTable(parseList * pl) {
+
+	parseToken * pt;
+
+	printf("%x\n", pl);
+
+	while(pl != NULL) {
+		printf("NT : %d\n", pl->id);
+		pt = pl->top;
+		while(pt != NULL) {
+			printf("%s, %d -> ", ref[pt->terminalId], pt->ruleNo);
+			pt = pt->next;
+		}
+		printf("\n");
+		pl = pl->next;
+	}
 
 }
 

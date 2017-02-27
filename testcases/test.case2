@@ -4,7 +4,7 @@ start
 	declare aasd,b:integer;
 	declare c:boolean;
 	a:=21;
-	b:=23:
+	b:=23;
 
 
 	c:=(b-a>3);

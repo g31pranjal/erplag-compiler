@@ -24,6 +24,7 @@ struct el{
 
 };
 
+
 typedef struct rs ruleSeg;
 
 struct rs {
@@ -34,6 +35,7 @@ struct rs {
 	ruleSeg * prev;
 
 };
+
 
 typedef struct rl rule;
 
@@ -77,19 +79,27 @@ typedef struct {
 } firstAndFollowSets;
 
 
-typedef struct {
+typedef struct pt parseToken;
 
-	element * terminals;
+struct pt {
+	int terminalId;
+	element * trmData;
 	int ruleNo;
+	rule * rl;
 
-} parseToken;
+	parseToken * next;
+};
 
 
-typedef struct {
+typedef struct pl parseList;
 
-	parseToken ** matrix;
-
-} parseTable;
+struct pl {
+	parseToken * top;
+	int id;
+	element * nTrmData;
+	
+	parseList * next;
+};
 
 
 
@@ -106,7 +116,7 @@ typedef struct {
 
 #define _tokenToNumMapping
 
-static char * ref[] = {"DECLARE", "MODULE", "PRINT", "USE", "DRIVER", "PROGRAM", "WITH", "TAKES", "INPUT", "PARAMETERS", "AND", "RETURNS", "OR", "FOR", "INTEGER", "REAL", "BOOLEAN", "ARRAY", "START", "END", "GET_VALUE", "IN", "SWITCH", "TRUE", "FALSE", "CASE", "BREAK", "DEFAULT", "WHILE", "OF", "ID", "NUM", "RNUM", "EMPTY", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GT", "GE", "NE", "EQ", "DEF", "ENDDEF", "COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBC", "SQBO", "BO", "BC", "COMMENTMARK", "ERROR", "$", "DRIVERDEF", "DRIVERENDDEF", "", "", "", ""};
+static char * ref[] = {"DECLARE", "MODULE", "PRINT", "USE", "DRIVER", "PROGRAM", "WITH", "TAKES", "INPUT", "PARAMETERS", "AND", "RETURNS", "OR", "FOR", "INTEGER", "REAL", "BOOLEAN", "ARRAY", "START", "END", "GET_VALUE", "IN", "SWITCH", "TRUE", "FALSE", "CASE", "BREAK", "DEFAULT", "WHILE", "OF", "ID", "NUM", "RNUM", "EMPTY", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GT", "GE", "NE", "EQ", "DEF", "ENDDEF", "COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBC", "SQBO", "BO", "BC", "COMMENTMARK", "ERROR", "EOF", "DRIVERDEF", "DRIVERENDDEF", "", "", "", ""};
 
 
 #endif

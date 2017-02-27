@@ -85,8 +85,6 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	
 	strcpy(nw->val, trm_name);
 	nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
-	
-	// setFirstAndFollowOfTerminal(nw);
 
 	nw->next = gr->trm[key];
 	gr->trm[key] = nw;
@@ -278,7 +276,8 @@ int dismantleGrammar(grammar * gr) {
 		rl = rl->next;
 		free(rltf);
 	}
-	free(gr);
+
+	// free(gr);
 
 	return 0;
 }
@@ -426,20 +425,6 @@ int calculateFollowSets(grammar * gr) {
 }
 
 
-int setFirstAndFollowOfTerminal(grammar * gr) {
-
-	
-	return 0;
-}
-
-int numberNonTerminals(grammar * gr) {
-
-	
-	return 0;
-}
-
-
-
 
 firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 
@@ -488,20 +473,94 @@ firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 	ff->ntrm_num = gr->ntrm_num;
 
 	return ff;
-	
 }
 
 
-parseTable * initParseTable() {
+parseList * initParseTable(grammar * gr, firstAndFollowSets * ff) {
 
-	parseTable * nw = (parseTable *)malloc(sizeof(parseTable));
-	nw->matrix = (parseToken **)malloc(26*sizeof(parseToken *));
-	int i;
-	for(i = 0;i<26;i++) {
-		nw->matrix[i] = NULL;
+	parseList * head, * nw;
+	parseToken * pt;
+	head = NULL;
+	rule * rl;
+	ruleSeg * rs;
+	unsigned long long nt_fst, seg_fst, empty = 8589934592l;
+
+	int i, j, k;
+	element * nt, * rhs_ele;
+
+	for(i=0;i<26;i++) {
+		nt = gr->ntrm[i];
+		while(nt != NULL) {
+			
+			// printf("%s\n", nt->val);
+			nw = (parseList *)malloc(sizeof(parseList));
+			nw->next = head;
+			nw->top = NULL;
+			nw->nTrmData = nt;
+			head = nw;
+			nw->id = nt->id;
+
+			for(j=0;j<nt->occ_lhs_num;j++) {
+
+				rl = fetchRuleFromGrammar(gr, nt->occ_lhs[j]);
+				nt_fst = 0;
+				rs = rl->rhstop;
+
+				while(rs != NULL) {
+					rhs_ele = rs->data;
+					seg_fst = rhs_ele->first;
+
+					if(seg_fst == empty && rs == rl->rhstop) {
+						nt_fst = nt_fst | seg_fst;
+					}
+					else {
+						if( (seg_fst & (~empty)) == seg_fst ) {
+							nt_fst = nt_fst | seg_fst;
+							break;
+						} 
+						else {
+							seg_fst = seg_fst & (~empty);
+							nt_fst = nt_fst | seg_fst;
+						}
+					}
+					rs = rs->next;
+				}
+				if(rs == NULL) {
+					nt_fst = nt_fst | empty;
+				}
+
+				// printf("rule no : %d\n", nt->occ_lhs[j]);
+				// printSetValues(nt_fst);
+
+				if( (nt_fst & empty) == empty) {
+					// printSetValues(nt_fst);
+					nt_fst = (nt_fst & ~empty) | rl->lhs.data->follow;
+					// printSetValues(nt_fst);
+				}
+
+				k = 0;
+				while(nt_fst != NULL) {
+					if(nt_fst % 2 == 1) {
+						pt = (parseToken *)malloc(sizeof(parseToken));
+						pt->next = nw->top;
+						pt->terminalId = k;
+						pt->trmData = searchForTerminal(gr, ref[k]);
+						pt->ruleNo = nt->occ_lhs[j];
+						pt->rl = rl;
+						nw->top = pt;
+						// printf("%s, rule : %d\n", ref[k], pt->ruleNo);
+					}
+					nt_fst = nt_fst>>1;
+					k++;
+				}
+
+			}
+			nt = nt->next;
+		}
 	}
-	return nw;
+	return head;
 }
+
 
 
 int main() {
@@ -510,12 +569,15 @@ int main() {
 	
 	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
 
+	parseList * tableHead = initParseTable(gr, ff);
+
+	printParseTable(tableHead);
+
+
 	// printGrammar(gr);
 	dismantleGrammar(gr);
-	printFFSets(ff);
 
-	
-	
+	// printFFSets(ff);
 
 	// calculateFirstSets(gr);
 

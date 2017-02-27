@@ -4,7 +4,7 @@
 #include <stdlib.h> 
 #include "lexerDef.h"
 
-#define BUFF_SIZE 1000
+#define BUFF_SIZE 65
 #define HASH_KEYWORD_SIZE 13
 
 typedef struct nd keyword;
@@ -80,56 +80,130 @@ token * createToken(int id, char * val, int lno) {
 	return nw;
 }
 
-
-
-// static char buff[2][BUFF_SIZE];
-// static int line = 0;
-// static FILE * fp = NULL;
-
-
-// int getStream() {
-
-// 	if(fp == NULL) {
-// 		// opening the file for read 
-// 		char * filename = "../testcases/test.case1";	
-// 		fp = fopen(filename, "r");
-// 	}
-
-// 	int readChars = fread(buff[(line+1)%2], 1, BUFF_SIZE, fp);
-// 	buff[(line+1)%2][BUFF_SIZE] = '\0';
-	
-// 	return NULL;	
-	
-// }
-
-
-static int globalPtr = 0;
+static int forward=0;
 static char * filename = "../testcases/test.case2";
 static FILE *fp = NULL ;
-static char buff[BUFF_SIZE];
+static char buff1[BUFF_SIZE];
+static char buff2[BUFF_SIZE];
+static int flag = 0;
+static int lastChanged = 0;
+
 
 int init() {
 
 	fp = fopen(filename, "r");
 	
-	memset(buff, 0, BUFF_SIZE);
-	fread(buff, 1, BUFF_SIZE, fp);
-	
+	memset(buff1, 0, BUFF_SIZE);
+	memset(buff2, 0, BUFF_SIZE);
+	fread(buff1, 1, BUFF_SIZE, fp);
+	lastChanged=0;
 	return 0;
+}
+
+
+void printBuffer() {
+
+	printf("contents of 1 : \n");
+	int i;
+	for(i=0;i<50;i++) {
+		printf("%d ", buff1[i], buff1[i]);
+	}
+	printf("\n");
+	
+	printf("contents of 2 : \n");
+	// int i;
+	for(i=0;i<50;i++) {
+		printf("%d ", buff2[i], buff2[i]);
+	}
+	printf("\n");
+
 
 }
 
+
+
 char getChar() {
-	return buff[globalPtr++];
+	int readC;
+
+	// printf("flag : %d, forward : %d\n", flag, forward);
+
+	if(flag==0) {
+		char ch=buff1[forward];
+		forward++;
+		if(forward==BUFF_SIZE) {
+			printf("switching to buff2\n");
+			flag=1;
+			forward=0;
+			
+			if(lastChanged==0)
+			{
+			memset(buff2, 0, BUFF_SIZE);
+			fread(buff2, 1, BUFF_SIZE, fp);
+			lastChanged=1;
+			}
+			// printBuffer();
+		}
+		return ch;
+	}
+	else {
+
+		// int i;
+		// for(i=0;i<100;i++) {
+		// 	printf("%c ", buff2[i]);
+		// }
+		// printf("\n");
+		char ch = buff2[forward];
+		forward++;
+		if(forward==BUFF_SIZE)
+		{
+			printf("switching to buff1\n");
+			flag=0;
+			forward=0;
+			
+			if(lastChanged==1)
+			{
+			memset(buff1, 0, BUFF_SIZE);
+			fread(buff1, 1, BUFF_SIZE, fp);
+			lastChanged=0;
+		}
+			// printBuffer();
+		}
+		return ch;
+	}
 }
 
 
 static int lno = 1;
 
+void modifyForward() {
+
+	// printf("entering modify\n");
+	// printf("forward in modify : %d\n", forward);
+
+	if(forward==0 && flag==1)
+	{
+		printf("switching back to buff1\n");
+
+		flag=0;
+		forward=BUFF_SIZE-1;
+	}
+	else if(forward==0 && flag==0)
+	{
+		printf("switching back to buff2\n");
+
+     flag=1;
+     forward=BUFF_SIZE-1;
+	}
+	else
+    forward--;
+}
+
 token * retrace(int state, char attr[30]) {
 
 	// get the pointer back by 1
-	globalPtr--;
+	modifyForward();
+
+    lexemeBegin=forward+1;
 
 	if(state == 3) {
 		return createToken(36, "", lno);
@@ -164,10 +238,8 @@ token * retrace(int state, char attr[30]) {
 	else {
 		return createToken(56, attr, lno);
 	}
-
+   
 }
-
-
 
 
 token * getToken() {
@@ -182,6 +254,7 @@ token * getToken() {
 	while(1) {
 
 		spot = getChar();
+
 
 		// printf("spot %d\n", spot);
 
