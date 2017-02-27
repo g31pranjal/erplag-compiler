@@ -4,7 +4,7 @@
 #include <stdlib.h> 
 #include "lexerDef.h"
 
-#define BUFF_SIZE 65
+#define BUFF_SIZE 40
 #define HASH_KEYWORD_SIZE 13
 
 typedef struct nd keyword;
@@ -81,7 +81,7 @@ token * createToken(int id, char * val, int lno) {
 }
 
 static int forward=0;
-static char * filename = "../testcases/test.case2";
+static char * filename = "../testcases/test.case6";
 static FILE *fp = NULL ;
 static char buff1[BUFF_SIZE];
 static char buff2[BUFF_SIZE];
@@ -101,72 +101,37 @@ int init() {
 }
 
 
-void printBuffer() {
-
-	printf("contents of 1 : \n");
-	int i;
-	for(i=0;i<50;i++) {
-		printf("%d ", buff1[i], buff1[i]);
-	}
-	printf("\n");
-	
-	printf("contents of 2 : \n");
-	// int i;
-	for(i=0;i<50;i++) {
-		printf("%d ", buff2[i], buff2[i]);
-	}
-	printf("\n");
-
-
-}
-
-
 
 char getChar() {
 	int readC;
-
-	// printf("flag : %d, forward : %d\n", flag, forward);
 
 	if(flag==0) {
 		char ch=buff1[forward];
 		forward++;
 		if(forward==BUFF_SIZE) {
-			printf("switching to buff2\n");
 			flag=1;
 			forward=0;
 			
-			if(lastChanged==0)
-			{
-			memset(buff2, 0, BUFF_SIZE);
-			fread(buff2, 1, BUFF_SIZE, fp);
-			lastChanged=1;
+			if(lastChanged==0) {
+				memset(buff2, 0, BUFF_SIZE);
+				fread(buff2, 1, BUFF_SIZE, fp);
+				lastChanged=1;
 			}
-			// printBuffer();
 		}
 		return ch;
 	}
 	else {
-
-		// int i;
-		// for(i=0;i<100;i++) {
-		// 	printf("%c ", buff2[i]);
-		// }
-		// printf("\n");
 		char ch = buff2[forward];
 		forward++;
-		if(forward==BUFF_SIZE)
-		{
-			printf("switching to buff1\n");
+		if(forward==BUFF_SIZE) {
 			flag=0;
 			forward=0;
 			
-			if(lastChanged==1)
-			{
-			memset(buff1, 0, BUFF_SIZE);
-			fread(buff1, 1, BUFF_SIZE, fp);
-			lastChanged=0;
-		}
-			// printBuffer();
+			if(lastChanged==1) {
+				memset(buff1, 0, BUFF_SIZE);
+				fread(buff1, 1, BUFF_SIZE, fp);
+				lastChanged=0;
+			}
 		}
 		return ch;
 	}
@@ -177,36 +142,30 @@ static int lno = 1;
 
 void modifyForward() {
 
-	// printf("entering modify\n");
-	// printf("forward in modify : %d\n", forward);
-
-	if(forward==0 && flag==1)
-	{
-		printf("switching back to buff1\n");
-
+	if(forward==0 && flag==1) {
 		flag=0;
 		forward=BUFF_SIZE-1;
 	}
-	else if(forward==0 && flag==0)
-	{
-		printf("switching back to buff2\n");
-
-     flag=1;
-     forward=BUFF_SIZE-1;
+	else if(forward==0 && flag==0) {
+		flag=1;
+		forward=BUFF_SIZE-1;
 	}
 	else
-    forward--;
+		forward--;
 }
 
 token * retrace(int state, char attr[30]) {
 
-	// get the pointer back by 1
 	modifyForward();
-
-    lexemeBegin=forward+1;
 
 	if(state == 3) {
 		return createToken(36, "", lno);
+	}
+	else if(state == 6) {
+		return createToken(44, "", lno);
+	}
+	else if(state == 9) {
+		return createToken(45, "", lno);
 	}
 	else if(state == 5) {
 		return createToken(38, "", lno);
@@ -222,6 +181,13 @@ token * retrace(int state, char attr[30]) {
 	}
 	else if(state == 30 || state == 33) {
 		return createToken(32, attr, lno);
+	}
+	else if(state == 34) {
+		modifyForward();
+		char numb[30];
+		memset(numb, '\0', 30);
+		strncpy(numb, attr, strlen(attr) - 1);
+		return createToken(31, numb ,lno);
 	}
 	else if(state == 27 || state == 26) {
 		int val = search(attr);
@@ -255,9 +221,6 @@ token * getToken() {
 
 		spot = getChar();
 
-
-		// printf("spot %d\n", spot);
-
 		if(spot == 0) {
 			if(state == 0) {
 				state = 27;
@@ -268,7 +231,9 @@ token * getToken() {
 			}
 		}
 		else if(commented) {
-			if(spot == '*') {
+			if(spot == 10)
+				lno++;
+			else if(spot == '*') {
 				if(cmark == 0)
 					cmark = 1;
 				else if(cmark == 1) {
@@ -299,6 +264,7 @@ token * getToken() {
 					return createToken(34, "", lno);
 				}
 				else if(state == 31) {
+					attr[atptr++] = spot;
 					state = 32;
 				}
 				else {
@@ -311,6 +277,7 @@ token * getToken() {
 					return createToken(35, "", lno);
 				}
 				else if(state == 31) {
+					attr[atptr++] = spot;
 					state = 32;
 				}
 				else {
@@ -335,11 +302,13 @@ token * getToken() {
 				}
 				else if(state == 5) {
 					state = 6;
-					return createToken(44, "", lno);
 				}
-				else {
+				else if(state == 6) {
+					state = 35;
+					return createToken(58, "", lno);
+				}
+				else 
 					return retrace(state, attr);
-				}
 			}
 			else if(spot == '>') {
 				if(state == 0) {
@@ -347,7 +316,10 @@ token * getToken() {
 				}
 				else if(state == 8) {
 					state = 9;
-					return createToken(45, "", lno);
+				}
+				else if(state == 9) {
+					state = 36;
+					return createToken(59, "", lno);
 				}
 				else {
 					return retrace(state, attr);
@@ -390,8 +362,11 @@ token * getToken() {
 					attr[atptr++] = spot;
 					state = 29;
 				}
-				else {
+				else if(state == 29) {
+					state = 34;
 					return retrace(state, attr);
+				}
+				else {
 				}
 			}
 			else if(spot == '[') {

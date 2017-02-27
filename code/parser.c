@@ -59,15 +59,17 @@ rule * addRuleToGrammar(grammar * gr) {
 }
 
 
-element * searchForTerminal(grammar * gr, char * trm_name) {
-	
+element * searchForTerminal(grammar * gr, char * trm_name, int addImp) {
+// if addImp is TRUE, record which rule for which rule the terminal is accessed
+
 	int key = ((int)trm_name[0])-65, i;
 
 	element * node = gr->trm[key];
 
 	while(node != NULL) {
 		if(strcmp(node->val, trm_name) == 0) {
-			node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
+			if(addImp)
+				node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
 			return node;
 		}
 		node = node->next;
@@ -84,7 +86,8 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	nw->occ_rhs_num = 0;
 	
 	strcpy(nw->val, trm_name);
-	nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
+	if(addImp)
+		nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
 
 	nw->next = gr->trm[key];
 	gr->trm[key] = nw;
@@ -94,7 +97,8 @@ element * searchForTerminal(grammar * gr, char * trm_name) {
 	return nw;
 }
 
-element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
+element * searchForNonTerminal(grammar * gr, char * trm_name, int orig, int addImp) {
+// if addImp is TRUE, record which rule for which rule the terminal is accessed
 	
 	int key = ((int)trm_name[1])-97, i;
 
@@ -102,10 +106,12 @@ element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
 
 	while(node != NULL) {
 		if(strcmp(node->val, trm_name) == 0) {
-			if(orig)
-				node->occ_lhs[node->occ_lhs_num++] = gr->rule_num;
-			else
-				node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
+			if(addImp) {
+				if(orig)
+					node->occ_lhs[node->occ_lhs_num++] = gr->rule_num;
+				else
+					node->occ_rhs[node->occ_rhs_num++] = gr->rule_num;
+			}
 			return node;
 		}
 		node = node->next;
@@ -122,10 +128,12 @@ element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
 	nw->occ_rhs_num = 0;
 	
 	strcpy(nw->val, trm_name);
-	if(orig)
-		nw->occ_lhs[nw->occ_lhs_num++] = gr->rule_num;
-	else
-		nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
+	if(addImp) {
+		if(orig)
+			nw->occ_lhs[nw->occ_lhs_num++] = gr->rule_num;
+		else
+			nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
+	}
 
 	nw->next = gr->ntrm[key];
 	gr->ntrm[key] = nw;
@@ -136,7 +144,7 @@ element * searchForNonTerminal(grammar * gr, char * trm_name, int orig) {
 
 
 int fillRuleLHS(grammar * gr, rule * rl, char * ntrm) {
-	rl->lhs.data = searchForNonTerminal(gr, ntrm, 1);
+	rl->lhs.data = searchForNonTerminal(gr, ntrm, 1, 1);
 	if(gr->start == NULL) {
 		gr->start = rl->lhs.data;
 	}
@@ -149,9 +157,9 @@ int fillRuleRHS(grammar * gr, rule * rl, char * str) {
 	element * ref;
 
 	if(str[0] == '<') 
-		ref = searchForNonTerminal(gr, str, 0);
+		ref = searchForNonTerminal(gr, str, 0, 1);
 	else
-		ref = searchForTerminal(gr, str);
+		ref = searchForTerminal(gr, str, 1);
 
 	ruleSeg * nw, * lst;
 	nw = (ruleSeg *)malloc(sizeof(ruleSeg));
@@ -167,9 +175,9 @@ int fillRuleRHS(grammar * gr, rule * rl, char * str) {
 		nw->prev = lst;
 		rl->rhsbot = nw;
 	}
-
 	return 0;
 }
+
 
 grammar * readGrammarFromFile(char * filename) {
 
@@ -318,24 +326,26 @@ int calculateFirstSets(grammar * gr) {
 						rl = fetchRuleFromGrammar(gr, nt->occ_lhs[j]);
 						rs = rl->rhstop;
 						while(rs != NULL) {
-							rhs_ele = rs->data;
-							seg_fst = rhs_ele->first;
+							if(rs->data != nt) {
+								rhs_ele = rs->data;
+								seg_fst = rhs_ele->first;
 
-							if(seg_fst == empty && rs == rl->rhstop) {
-								nt_fst = nt_fst | seg_fst;
-							}
-							else if(rhs_ele->first == 0) {
-								notPossible = 1;
-								break;
-							}
-							else {
-								if( (seg_fst & (~empty)) == seg_fst ) {
+								if(seg_fst == empty && rs == rl->rhstop) {
 									nt_fst = nt_fst | seg_fst;
+								}
+								else if(rhs_ele->first == 0) {
+									notPossible = 1;
 									break;
-								} 
+								}
 								else {
-									seg_fst = seg_fst & (~empty);
-									nt_fst = nt_fst | seg_fst;
+									if( (seg_fst & (~empty)) == seg_fst ) {
+										nt_fst = nt_fst | seg_fst;
+										break;
+									} 
+									else {
+										seg_fst = seg_fst & (~empty);
+										nt_fst = nt_fst | seg_fst;
+									}
 								}
 							}
 							rs = rs->next;
@@ -460,9 +470,9 @@ firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 		}
 	}
 	
-	// printf("\n\n FIRST \n\n");
+	printf("\n\n FIRST \n\n");
 	calculateFirstSets(gr);
-	// printf("\n\n FOLLOWS \n\n");
+	printf("\n\n FOLLOWS \n\n");
 	calculateFollowSets(gr);
 	
 	firstAndFollowSets * ff;
@@ -539,12 +549,13 @@ parseList * initParseTable(grammar * gr, firstAndFollowSets * ff) {
 				}
 
 				k = 0;
-				while(nt_fst != NULL) {
+				while(nt_fst != 0) {
 					if(nt_fst % 2 == 1) {
 						pt = (parseToken *)malloc(sizeof(parseToken));
 						pt->next = nw->top;
 						pt->terminalId = k;
-						pt->trmData = searchForTerminal(gr, ref[k]);
+						// printf("gr %x, refk %s\n", gr, ref[k]);
+						pt->trmData = searchForTerminal(gr, ref[k], 0);
 						pt->ruleNo = nt->occ_lhs[j];
 						pt->rl = rl;
 						nw->top = pt;
@@ -571,7 +582,7 @@ int main() {
 
 	parseList * tableHead = initParseTable(gr, ff);
 
-	printParseTable(tableHead);
+	// printParseTable(tableHead);
 
 
 	// printGrammar(gr);

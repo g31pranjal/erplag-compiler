@@ -1,5 +1,5 @@
 declare module readArr;
-**the following function computes the sum of first n elements of the array**
+
 <<module arraySum>>
 takes input[list:array[1..15] of    real, n:integer];
 returns  [sum:real];
@@ -17,10 +17,10 @@ start
 				   break;
 			case false: print(sum);
 				    print(index);
-				    **prints the values of sum and index  15-n times**
+				    
 				    break;
 		end
-		** no need to increment the value of index as it will be taken care by the semantic rules associated with for construct, but an increment statement does not make its syntax incorrect**
+		
 	end
 	print(sum);
 end
@@ -35,10 +35,10 @@ start
 	print(s);
 end
 
-**The following module reads k  values one by one**
-** the array elements are populated with the read values**
-**The array variable is not returned as the translation will**
-**use the same locations for array elements**
+
+
+
+
 
 <<module readArr>>
 takes input [arr1:array[1..15] of real,k:integer];
@@ -51,6 +51,6 @@ start
 		get_value(tempvar);
 		arr1[i]:=tempvar;
 		i:=i+1;
-		** the semantics of while needs an increment and will be taken care of at the second phase**
+		
 	end
 end

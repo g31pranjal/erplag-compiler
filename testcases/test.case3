@@ -7,7 +7,7 @@ start
 	print(i_1);
 end
 
-<<driver Program>>
+<<<driver program>>>
 start
 	declare a,b, dummy:integer;
 	a:=48;

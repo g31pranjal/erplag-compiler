@@ -12,13 +12,13 @@ start
 	sum := s;
 end
 
-<<driver Program>>
+<<<driver program>>>
 start
 	declare num, k:integer;
 	declare A:array [1..10] of integer;
 	for( k in 1..10)
 	start
-		A[k]:=(num – k)*(num-k);
+		A[k]:=(num - k)*(num-k);
 		print(A[k]);
 	end
 	[num]:=use module arraysum with parameters A;
