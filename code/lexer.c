@@ -65,6 +65,42 @@ int search(char * value) {
 	return -1;
 }
 
+int initLexerHash() {
+
+	insert("integer",14); 
+	insert("real",15);
+	insert("boolean",16);
+	insert("of",29);
+	insert("array",17);
+	insert("start",18);
+	insert("end",19);
+	insert("declare",0);
+	insert("module",1);
+	insert("driver",4);
+	insert("program",5);
+	insert("get_value",20);
+	insert("print",2);
+	insert("use",3);
+	insert("with",6);
+	insert("parameters",9);
+	insert("true",23);
+	insert("false",24);
+	insert("takes",7);
+	insert("input",8);
+	insert("returns",11);
+	insert("AND",10);
+	insert("OR",12);
+	insert("for",13);
+	insert("in",21);
+	insert("switch",22);
+	insert("case",25);
+	insert("break",26);
+	insert("default",27);
+	insert("while",28);
+
+	return 0;
+}
+
 token * createToken(int id, char * val, int lno) {
 	token * nw;
 	nw = malloc(sizeof(token)); 
@@ -80,23 +116,24 @@ token * createToken(int id, char * val, int lno) {
 	return nw;
 }
 
-static int forward=0;
-static char * filename = "../testcases/test.case6";
+static int forward, flag, lastChanged;
 static FILE *fp = NULL ;
 static char buff1[BUFF_SIZE];
 static char buff2[BUFF_SIZE];
-static int flag = 0;
-static int lastChanged = 0;
 
 
-int init() {
+int setUpStream(char *filename) {
 
+	initLexerHash();
+	
 	fp = fopen(filename, "r");
 	
 	memset(buff1, 0, BUFF_SIZE);
 	memset(buff2, 0, BUFF_SIZE);
 	fread(buff1, 1, BUFF_SIZE, fp);
-	lastChanged=0;
+	lastChanged = 0;
+	forward = 0;
+	flag = 0;
 	return 0;
 }
 
@@ -516,52 +553,24 @@ token * getToken() {
 
 
 
-int main(int argc, char  * argv[]) {
+// int main(int argc, char  * argv[]) {
 
-	insert("integer",14); 
-	insert("real",15);
-	insert("boolean",16);
-	insert("of",29);
-	insert("array",17);
-	insert("start",18);
-	insert("end",19);
-	insert("declare",0);
-	insert("module",1);
-	insert("driver",4);
-	insert("program",5);
-	insert("get_value",20);
-	insert("print",2);
-	insert("use",3);
-	insert("with",6);
-	insert("parameters",9);
-	insert("true",23);
-	insert("false",24);
-	insert("takes",7);
-	insert("input",8);
-	insert("returns",11);
-	insert("AND",10);
-	insert("OR",12);
-	insert("for",13);
-	insert("in",21);
-	insert("switch",22);
-	insert("case",25);
-	insert("break",26);
-	insert("default",27);
-	insert("while",28);
-
-	init();
-
-	token * got;
-
-	got = getToken();
-	for(int i=0;!(got->id == 56 ||got->id == 57) ;i++) {
-		printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
-		got = getToken();
-	}
-	printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
+// 	initLexerHash();
+// 	setUpStream("../testcases/test.case2");
 
 
-}
+
+// 	token * got;
+
+// 	got = getToken();
+// 	for(int i=0;!(got->id == 56 ||got->id == 57) ;i++) {
+// 		printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
+// 		got = getToken();
+// 	}
+// 	printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
+
+
+// }
 
 
 

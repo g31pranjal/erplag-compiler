@@ -1,2 +1,4 @@
 *.out
 out.put
+*.o
+parser

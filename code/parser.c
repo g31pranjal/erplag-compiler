@@ -1,4 +1,7 @@
 #include "parserDef.h"
+#include "lexerDef.h"
+#include "lexer.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +63,7 @@ rule * addRuleToGrammar(grammar * gr) {
 
 
 element * searchForTerminal(grammar * gr, char * trm_name, int addImp) {
-// if addImp is TRUE, record which rule for which rule the terminal is accessed
+// if addImp is TRUE, record ruleNo for which rule the terminal is accessed
 
 	int key = ((int)trm_name[0])-65, i;
 
@@ -98,7 +101,7 @@ element * searchForTerminal(grammar * gr, char * trm_name, int addImp) {
 }
 
 element * searchForNonTerminal(grammar * gr, char * trm_name, int orig, int addImp) {
-// if addImp is TRUE, record which rule for which rule the terminal is accessed
+// if addImp is TRUE, record ruleNo for which rule the terminal is accessed
 	
 	int key = ((int)trm_name[1])-97, i;
 
@@ -573,26 +576,110 @@ parseList * initParseTable(grammar * gr, firstAndFollowSets * ff) {
 }
 
 
+treeNode * createTreeNode(int id, token * tk, treeNode * parent) {
+	
+	treeNode * nw;
+	nw = (treeNode *)malloc(sizeof(treeNode));
+
+	nw->parent = parent;
+	nw->childL = NULL;
+	nw->childR = NULL;
+
+	nw->next = NULL;
+	nw->prev = NULL;
+
+	nw->id = id;
+
+	memset(nw->tname, 0, sizeof(nw->tname));
+	memset(nw->val, 0, sizeof(nw->val));
+	nw->lno = -1;
+
+	if(tk != NULL) {
+		strcpy(nw->tname, tk->lxm);
+		strcpy(nw->val, tk->val);
+		nw->lno = tk->lno;
+	}
+
+	return nw;
+
+}
+
+
+treeNode * parseInputSourceCode(char *filename, parseList * pl) {
+
+	setUpStream(filename);
+
+	treeNode * root, * eof;
+
+	// eof, to be placed at the end of stack
+
+	eof = (treeNode *)malloc(sizeof(treeNode));
+	eof->parent = eof->childR = eof->childL = eof->next = eof->prev = NULL;
+	eof->id = 57;
+	eof->lno = -1;
+	memset(eof->tname, 0, sizeof(eof->tname));
+	memset(eof->val, 0, sizeof(eof->val));
+
+	stackWrapper * top, * tmp;
+
+	tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
+	tmp->ptr = eof;
+	tmp->next = NULL;
+
+	top = tmp;
+
+	// create root node
+
+	root = createTreeNode(5, NULL, NULL);
+
+
+
+
+
+
+
+
+	// token * got;
+
+	// got = getToken();
+	// for(int i=0;!(got->id == 56 ||got->id == 57) ;i++) {
+	// 	printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
+	// 	got = getToken();
+	// }
+	// printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
+
+
+	
+}
+
+
+
+
 
 int main() {
 
-	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
+	// grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 	
-	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
+	// firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
 
-	parseList * tableHead = initParseTable(gr, ff);
+	// parseList * tableHead = initParseTable(gr, ff);
 
-	// printParseTable(tableHead);
+	// // printParseTable(tableHead);
 
 
 	// printGrammar(gr);
-	dismantleGrammar(gr);
+	// dismantleGrammar(gr);
 
-	// printFFSets(ff);
+	// // printFFSets(ff);
 
-	// calculateFirstSets(gr);
+	// // calculateFirstSets(gr);
 
+
+	parseInputSourceCode("../testcases/test.case2", NULL);
+
+	
 	return 0;
+
 }
 
 
