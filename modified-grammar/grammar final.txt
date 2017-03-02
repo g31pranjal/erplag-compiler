@@ -50,9 +50,7 @@
 <idListRec>				:		EMPTY 
 <expression>			:		<arithOrBoolExpr>
 <expression>			:		<negArithStmts>
-<negArithStmts> 		:		MINUS <qt>
-<qt>					:		BO <arithmeticExpr> BC
-<qt>					:		<var>
+<negArithStmts> 		:		MINUS BO <arithmeticExpr> BC
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
 <arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
 <arithOrBoolExprRec> 	:		EMPTY
@@ -65,7 +63,7 @@
 <term>					:		<factor> <termRec>
 <termRec>				:		<md> <factor> <termRec>
 <termRec>				:		EMPTY
-<factor>				:		BO <arithOrBoolExprRec> BC
+<factor>				:		BO <arithOrBoolExpr> BC
 <factor>				:		<var>
 <var>					:		ID <whichId>
 <var>					:		NUM
@@ -93,5 +91,5 @@
 <default>				:		DEFAULT COLON <statements> BREAK SEMICOL
 <default>				:		EMPTY
 <iterativeStmt>			:		FOR BO ID IN <range> BC START <statements> END
-<iterativeStmt>			:		WHILE BO <arithOrBoolExprRec> BC START <statements> END
+<iterativeStmt>			:		WHILE BO <arithOrBoolExpr> BC START <statements> END
 <range>					:		NUM RANGEOP NUM

@@ -1,13 +1,13 @@
 declare module mod1;
 
 
-<<driver Program>>
+<<< driver program >>>
 start
 	declare v, w, r :integer;
 	get_value(v);
 	w:=22;
 	declare m:real;
-	[r,m] := use mod1 with parameters v, w;
+	[r,m] := use module mod1 with parameters v, w;
 	print(r);
 	print(m);
 end
@@ -21,3 +21,4 @@ start
 	x:=a+b-10;
 	abc:=b/5+c;
 end
+

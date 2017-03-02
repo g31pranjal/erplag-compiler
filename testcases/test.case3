@@ -1,4 +1,5 @@
 <<module mod1>>
+
 takes input [index:integer, val_:integer];
 ** this function does not return any value**
 start
@@ -17,11 +18,11 @@ start
 	flag:=(a>=30)AND(b<30);
 	switch(flag)
 	start
-		case FALSE :
+		case true :
 			print(100);
 			break;
-		case TRUE :
-			use mod1 with parameters a, b;
+		case false :
+			use module mod1 with parameters a, b;
 			break;
 	end
 end

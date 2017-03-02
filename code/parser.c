@@ -380,17 +380,23 @@ int calculateFollowSets(grammar * gr) {
 	int leftFollows = gr->ntrm_num, i, j, notPossible;
 	element * nt;
 	rule * rl;
-	ruleSeg * rs;
+	ruleSeg * rs, *beta;
 	unsigned long long dollar = 144115188075855872l, empty = 8589934592l, nt_flw, seg_flw;
 
 	gr->start->follow = dollar;
 	leftFollows--;
 
 	while(leftFollows) {
+
+		// printf("\n\n LEFT : %d \n", leftFollows);
+
 		for(i=0;i<26;i++) {
 			nt = gr->ntrm[i];
 			while(nt != NULL) {
 				if(nt->follow == 0) {
+
+					// printf("inspecting : %s ", nt->val);
+
 					nt_flw = 0;
 					notPossible = 0;
 
@@ -398,29 +404,66 @@ int calculateFollowSets(grammar * gr) {
 						rl = fetchRuleFromGrammar(gr, nt->occ_rhs[j]);
 						rs = rl->rhstop;
 
-						while(rs->data != nt)
-							rs = rs->next;
+						while(rs != NULL) {
 
-						if(rs->next == NULL) {
-							if(rl->lhs.data != nt) {
-								if(rl->lhs.data->follow == 0) {
-									notPossible = 1;
-									break;
+							while(rs != NULL && rs->data != nt)
+								rs = rs->next;
+
+							if(rs != NULL) {
+								if(rs->next == NULL) {
+									if(rl->lhs.data != nt) {
+										if(rl->lhs.data->follow == 0) {
+											notPossible = 1;
+												// printf(" depends on %s\n", rl->lhs.data->val);
+
+											break;
+										}
+										nt_flw = nt_flw | rl->lhs.data->follow;
+									}
 								}
-								nt_flw = nt_flw | rl->lhs.data->follow;
-							}
-						}
-						else {
-							seg_flw = rs->next->data->first;
-							nt_flw = nt_flw | (seg_flw & ~empty);
-							if(rl->lhs.data != nt && ( (seg_flw | empty) == seg_flw ) ) {
-								if(rl->lhs.data->follow == 0) {
-									notPossible = 1;
-									break;
+								else {
+									
+									beta = rs->next;
+									
+									seg_flw = 0;
+
+									while(beta != NULL) {
+										// printf("beta ka data\n");
+										// printSetValues(beta->data->first & (~empty));
+										
+										if((beta->data->first & (~empty)) == beta->data->first) {
+											seg_flw = seg_flw | beta->data->first;
+											break;
+										}
+										else {
+											seg_flw = seg_flw | (beta->data->first & (~empty));
+										}
+										beta = beta->next;
+									}
+										
+									nt_flw = nt_flw | seg_flw;
+
+									// printSetValues(nt_flw);
+									// printf("beta %x\n", beta);
+
+									if(beta == NULL) {
+										if(rl->lhs.data != nt ) {
+											if(rl->lhs.data->follow == 0) {
+												notPossible = 1;
+												// printf(" depends on %s\n", rl->lhs.data->val);
+												break;
+											}
+											nt_flw = nt_flw | rl->lhs.data->follow;
+										}
+									}
 								}
-								nt_flw = nt_flw | rl->lhs.data->follow;
+								rs = rs->next;
 							}
+							
 						}
+						if(notPossible)
+							break;
+
 					}
 
 					if(j == nt->occ_rhs_num) {
@@ -473,9 +516,9 @@ firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 		}
 	}
 	
-	printf("\n\n FIRST \n\n");
+	// printf("\n\n FIRST \n\n");
 	calculateFirstSets(gr);
-	printf("\n\n FOLLOWS \n\n");
+	// printf("\n\n FOLLOW \n\n");
 	calculateFollowSets(gr);
 	
 	firstAndFollowSets * ff;
@@ -576,7 +619,7 @@ parseList * initParseTable(grammar * gr, firstAndFollowSets * ff) {
 }
 
 
-treeNode * createTreeNode(int id, token * tk, treeNode * parent) {
+treeNode * createTreeNode(int id, /*token * tk,*/ treeNode * parent) {
 	
 	treeNode * nw;
 	nw = (treeNode *)malloc(sizeof(treeNode));
@@ -590,66 +633,174 @@ treeNode * createTreeNode(int id, token * tk, treeNode * parent) {
 
 	nw->id = id;
 
-	memset(nw->tname, 0, sizeof(nw->tname));
-	memset(nw->val, 0, sizeof(nw->val));
-	nw->lno = -1;
-
-	if(tk != NULL) {
-		strcpy(nw->tname, tk->lxm);
-		strcpy(nw->val, tk->val);
-		nw->lno = tk->lno;
-	}
+	// nw->tptr = tk;
+	nw->tptr = NULL;
 
 	return nw;
 
 }
 
+int addChildToNode(treeNode * child, treeNode * parent) {
 
-treeNode * parseInputSourceCode(char *filename, parseList * pl) {
+	if(parent->childL == NULL && parent->childR == NULL) {
+		parent->childL = child;
+		parent->childR = child;
+	}	
+	else {
+		parent->childR->next = child;
+		child->prev = parent->childR;
+		parent->childR = child;
+	}
+
+	return 0;
+}
+
+rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
+
+	parseToken * pt; 
+
+	while(pl != NULL) {
+		if(pl->id == ntId) {
+			pt = pl->top;
+			while(pt != NULL) {
+				if(pt->terminalId == tId) {
+					return pt->rl;
+				}
+				pt = pt->next;
+			}
+		}
+		pl = pl->next;
+	}
+
+	return NULL;
+
+}
+
+
+
+treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	setUpStream(filename);
 
-	treeNode * root, * eof;
+	treeNode * root, * eof, *nw, * rightend, *popped;
+	rule * rl;
+	int topId;
+	stackWrapper * stackTop, * tmp;
+	ruleSeg * rs;
 
 	// eof, to be placed at the end of stack
 
 	eof = (treeNode *)malloc(sizeof(treeNode));
 	eof->parent = eof->childR = eof->childL = eof->next = eof->prev = NULL;
 	eof->id = 57;
-	eof->lno = -1;
-	memset(eof->tname, 0, sizeof(eof->tname));
-	memset(eof->val, 0, sizeof(eof->val));
-
-	stackWrapper * top, * tmp;
+	eof->tptr = NULL;
 
 	tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
 	tmp->ptr = eof;
 	tmp->next = NULL;
 
-	top = tmp;
+	stackTop = tmp;
 
-	// create root node
+	// create root node, add root to stack
 
-	root = createTreeNode(5, NULL, NULL);
+	root = createTreeNode(gr->start->id, NULL);
+
+	tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
+	tmp->ptr = root;
+	tmp->next = NULL;
+
+	tmp->next = stackTop;
+	stackTop = tmp;
+
+	token * nxtT;
+	nxtT = getToken();
+
+	while(stackTop != NULL) {
+
+		// printf("\n\n\n");
+
+		// printStackWrapperSeq(stackTop);
+		// printf("\n\n");
+		
+		topId = stackTop->ptr->id;
+
+		// printf("top id %d\n", topId);
+
+		// pop out empty from the stack
+		if(topId == 33) {
+			stackTop = stackTop->next;
+		} 
+		// terminal
+		else if(topId >= 0 && topId < 100) {
+
+			// printf("%s\n", ref[topId]);
+
+			if(topId == nxtT->id) {
+				stackTop->ptr->tptr = nxtT;
+				// free the stack wrapper here
+				stackTop = stackTop->next;
+				nxtT = getToken();
+			}
+			else {
+				// error : top stack terminal do not match token (from lexer)
+			}
+
+		}
+		else {
+
+			// printf("got a non terminal\n");
+
+			// printf("%s\n", nxtT->lxm);
+
+			rl = SearchRuleInParseTable(pl, topId, nxtT->id);
+
+			// printf("%x\n", rl);
+			
+			if(rl == NULL) {
+				// error : no corresponding rule exists
+			}
+			else {
+				popped = stackTop->ptr;
+				stackTop = stackTop->next;
+
+				rs = rl->rhstop;
+
+				while(rs != NULL) {
+
+					// printf("creating tree node ... \n" );
+
+					nw = createTreeNode(rs->data->id, popped);
+					addChildToNode(nw, popped);
+
+					rs = rs->next;
+				}
+
+				rightend = popped->childR;
+
+				while(rightend != NULL) {
+
+					// printf("pushing in stack ... \n" );
+
+					tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
+					tmp->ptr = rightend;			
+					tmp->next = stackTop;
+					stackTop = tmp;
+
+					rightend = rightend->prev;
+
+				}
 
 
+			}
 
+		}
 
+		// break;
 
+	}
 
+	return 0;
 
-
-	// token * got;
-
-	// got = getToken();
-	// for(int i=0;!(got->id == 56 ||got->id == 57) ;i++) {
-	// 	printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
-	// 	got = getToken();
-	// }
-	// printf("------------- %s, %s, %d\n", got->lxm, got->val, got->lno);
-
-
-	
 }
 
 
@@ -658,14 +809,13 @@ treeNode * parseInputSourceCode(char *filename, parseList * pl) {
 
 int main() {
 
-	// grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
+	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
 	
-	// firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
+	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
 
-	// parseList * tableHead = initParseTable(gr, ff);
+	parseList * tableHead = initParseTable(gr, ff);
 
-	// // printParseTable(tableHead);
-
+	// printParseTable(tableHead);
 
 	// printGrammar(gr);
 	// dismantleGrammar(gr);
@@ -675,7 +825,7 @@ int main() {
 	// // calculateFirstSets(gr);
 
 
-	parseInputSourceCode("../testcases/test.case2", NULL);
+	parseInputSourceCode(gr, "../testcases/test.case6", tableHead);
 
 	
 	return 0;

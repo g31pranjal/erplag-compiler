@@ -1,4 +1,6 @@
 #include "parserDef.h"
+#include "lexerDef.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -132,7 +134,7 @@ int printParseTable(parseList * pl) {
 	printf("%x\n", pl);
 
 	while(pl != NULL) {
-		printf("NT : %d\n", pl->id);
+		printf("NT : %d, %s\n", pl->id, pl->nTrmData->val);
 		pt = pl->top;
 		while(pt != NULL) {
 			printf("%s, %d -> ", ref[pt->terminalId], pt->ruleNo);
@@ -140,6 +142,14 @@ int printParseTable(parseList * pl) {
 		}
 		printf("\n");
 		pl = pl->next;
+	}
+}
+
+int printStackWrapperSeq(stackWrapper * head) {
+
+	while(head != NULL) {
+		printf("%d ", head->ptr->id);
+		head = head->next;
 	}
 
 }

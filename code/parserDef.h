@@ -1,4 +1,4 @@
-
+#include "lexerDef.h"
 
 #ifndef _grammar
 
@@ -115,9 +115,8 @@ struct tn {
 	int id;
 
 	// for terminal
-	int lno;
-	char tname[25];
-	char val[30];
+	token * tptr;
+
 };
 
 
