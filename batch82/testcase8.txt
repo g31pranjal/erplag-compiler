@@ -3,7 +3,7 @@ takes input[list:array[1..20] of real];
 returns [sum:real];
 start
 	declare s: real;
-	s := 0.0;
+	s := 2.0;
 	declare index : integer;
 	for (index in 1..20)
 	start
@@ -12,7 +12,7 @@ start
 	sum := s;
 end
 
-<<<driver program>>>
+<<< driver program >>>
 start
 	declare num, k:integer;
 	declare A:array [1..10] of integer;

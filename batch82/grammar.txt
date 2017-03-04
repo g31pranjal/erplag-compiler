@@ -49,8 +49,7 @@
 <idListRec>				:		COMMA ID <idListRec>
 <idListRec>				:		EMPTY 
 <expression>			:		<arithOrBoolExpr>
-<expression>			:		<negArithStmts>
-<negArithStmts> 		:		MINUS BO <arithmeticExpr> BC
+<expression>			:		MINUS BO <arithmeticExpr> BC
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
 <arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
 <arithOrBoolExprRec> 	:		EMPTY

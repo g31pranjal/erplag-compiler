@@ -1,3 +1,12 @@
+/*
+Batch no. 82
+
+AUTHORS : 
+Pranjal Gupta (2013B4A7470P)
+Tanaya Jha (2013B3A7304P)
+*/
+
+
 #include "parserDef.h"
 #include "lexerDef.h"
 #include "lexer.h"
@@ -6,7 +15,175 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "aux.c"
+
+int printGrammar(grammar * gr) {
+
+	printf("\n\n ****** RULES *********\n");
+	printf("num of rules : %d\n", gr->rule_num);
+
+	rule * rl = gr->top;
+	ruleSeg * rs;
+
+	while(rl != NULL) {
+		printf("%s -> ", rl->lhs.data->val);
+		rs = rl->rhstop;
+		while(rs != NULL) {
+			printf("%s, ", rs->data->val);
+			rs = rs->next;
+		}
+		printf("\n");
+		rl = rl->next;
+	}
+
+	printf("\n\n ****** TERMINALS *******\n");
+	printf("num of terminals : %d\n", gr->trm_num);
+	element * node;
+
+	for(int i=0;i<26;i++) {
+		printf("%d\n", i);
+		node = gr->trm[i];
+		while(node != NULL) {
+			printf("%lld, %x, %s [ ", node->first, node, node->val);
+			int i;
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
+			}
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
+			node = node->next;
+		}
+		printf("\n");
+	}
+
+	printf("\n\n ****** non TERMINALS *******\n");
+	printf("num of non terminals : %d\n", gr->ntrm_num);
+
+	for(int i=0;i<26;i++) {
+		printf("%d\n", i);
+		node = gr->ntrm[i];
+		while(node != NULL) {
+			printf("%lld, %x, %s [", node->first, node, node->val);
+			int i;
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
+			}
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
+			node = node->next;
+		}
+		printf("\n");
+	}
+
+}
+
+
+int printFFSets(firstAndFollowSets * gr) {
+
+
+	printf("\n\n ****** TERMINALS *******\n\n");
+	printf("num of terminals : %d\n", gr->trm_num);
+	element * node;
+
+	for(int i=0;i<26;i++) {
+		printf("%d\n", i);
+		node = gr->trm[i];
+		while(node != NULL) {
+			printf("%d, %lld, %lld, %s [ ", node->id, node->first, node->follow, node->val);
+			int i;
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
+			}
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
+			node = node->next;
+		}
+		printf("\n");
+	}
+
+	printf("\n\n ****** non TERMINALS *******\n");
+	printf("num of non terminals : %d\n", gr->ntrm_num);
+
+	for(int i=0;i<26;i++) {
+		printf("%d\n", i);
+		node = gr->ntrm[i];
+		while(node != NULL) {
+			printf("%d, %lld, %lld, %s [",node->id, node->first, node->follow, node->val);
+			int i;
+			for(i=0;i<node->occ_lhs_num;i++) {
+				printf("%d, ", node->occ_lhs[i]);
+			}
+			printf(" | ");
+			for(i=0;i<node->occ_rhs_num;i++) {
+				printf("%d, ", node->occ_rhs[i]);
+			}
+			printf(" ] \n");
+
+			node = node->next;
+		}
+		printf("\n");
+	}
+}
+
+
+int printParseTable(parseList * pl) {
+
+	parseToken * pt;
+
+	printf("%x\n", pl);
+
+	while(pl != NULL) {
+		printf("NT : %d, %s\n", pl->id, pl->nTrmData->val);
+		pt = pl->top;
+		while(pt != NULL) {
+			printf("%s, %d -> ", ref[pt->terminalId], pt->ruleNo);
+			pt = pt->next;
+		}
+		printf("\n");
+		pl = pl->next;
+	}
+}
+
+int printStackWrapperSeq(stackWrapper * head) {
+
+	while(head != NULL) {
+		printf("%d ", head->ptr->id);
+		head = head->next;
+	}
+
+}
+
+
+void printSetValues(unsigned long long val) {
+
+	int exp = 0;
+	unsigned long long trace = 1;
+
+	while( val != 0 ) {
+
+		// printf("%lld, %lld\n", val, trace);
+
+		if( (val | trace) == val) {
+			printf("%s, ", ref[exp]);
+			val = val ^ trace;
+		}
+		trace = trace*2;
+		exp++;
+	}
+	printf("\n");
+
+}
 
 
 grammar * createGrammar() {
@@ -210,7 +387,7 @@ grammar * readGrammarFromFile(char * filename) {
 		int crossed = 0;
 
 		while(1) {
-			if(buf[ptr] == 10 ||  buf[ptr] == 0) 
+			if(buf[ptr] == 10 ||  buf[ptr] == 0 || buf[ptr] == 13 ) 
 				break;
 			else if(buf[ptr] == 9 || buf[ptr] == 32) {
 			}
@@ -220,7 +397,7 @@ grammar * readGrammarFromFile(char * filename) {
 			else {
 				valptr = 0;
 				memset(val, 0, 25);
-				while(buf[ptr] != 9 && buf[ptr] != 32 && buf[ptr] != 10 && buf[ptr] != 0) {
+				while(buf[ptr] != 9 && buf[ptr] != 32 && buf[ptr] != 10 && buf[ptr] != 0 && buf[ptr] != 13) {
 					val[valptr++] = buf[ptr];
 					ptr++;
 				}
@@ -532,7 +709,7 @@ firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 }
 
 
-parseList * initParseTable(grammar * gr, firstAndFollowSets * ff) {
+parseList * createParseTable(grammar * gr, firstAndFollowSets * ff) {
 
 	parseList * head, * nw;
 	parseToken * pt;
@@ -642,19 +819,26 @@ treeNode * createTreeNode(int id, /*token * tk,*/ treeNode * parent) {
 
 int addChildToNode(treeNode * child, treeNode * parent) {
 
+	// printf("adding child : %x to parent %x with left child %x\n", child, parent, parent->childL);
+
 	if(parent->childL == NULL && parent->childR == NULL) {
+		// printf("case of first child\n");
 		parent->childL = child;
 		parent->childR = child;
 	}	
 	else {
+		// printf("case of more than one child\n");
 		parent->childR->next = child;
 		child->prev = parent->childR;
 		parent->childR = child;
 	}
 
+	child->parent = parent;
+
 	return 0;
 }
 
+	
 rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
 
 	parseToken * pt; 
@@ -676,6 +860,26 @@ rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
 
 }
 
+element * searchForNonTerminalUsingID(grammar * gr, int id) {
+// if addImp is TRUE, record ruleNo for which rule the terminal is accessed
+	
+
+	int i=0;
+
+	for(i=0;i<26;i++) {
+		element * node = gr->ntrm[i];
+
+		while(node != NULL) {
+			if(node->id == id) {
+				return node;
+			}
+			node = node->next;
+		}
+		
+	}
+
+	return NULL;
+}
 
 
 treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
@@ -684,7 +888,8 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	treeNode * root, * eof, *nw, * rightend, *popped;
 	rule * rl;
-	int topId;
+	int topId, errors = 0;
+	unsigned long long sync;
 	stackWrapper * stackTop, * tmp;
 	ruleSeg * rs;
 
@@ -705,6 +910,8 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	root = createTreeNode(gr->start->id, NULL);
 
+	// printf("creating node : %x\n", root);
+
 	tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
 	tmp->ptr = root;
 	tmp->next = NULL;
@@ -714,6 +921,8 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	token * nxtT;
 	nxtT = getToken();
+	while(nxtT->id == 56)
+		nxtT = getToken();
 
 	while(stackTop != NULL) {
 
@@ -740,9 +949,18 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 				// free the stack wrapper here
 				stackTop = stackTop->next;
 				nxtT = getToken();
+				while(nxtT->id == 56)
+					nxtT = getToken();
 			}
 			else {
 				// error : top stack terminal do not match token (from lexer)
+				errors = 1;
+				printf("ERROR_5 : The token %s for the lexeme \'%s\' does not match at line %d\n", ref[stackTop->ptr->id], nxtT->val, nxtT->lno);	
+				stackTop = stackTop->next;
+				nxtT = getToken();
+				while(nxtT->id == 56)
+					nxtT = getToken();
+
 			}
 
 		}
@@ -757,7 +975,32 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 			// printf("%x\n", rl);
 			
 			if(rl == NULL) {
-				// error : no corresponding rule exists
+
+				errors = 1;
+				printf("ERROR_5 : The non terminal %s does not produce lexeme \'%s\' at line %d\n", searchForNonTerminalUsingID(gr, topId)->val, nxtT->val, nxtT->lno );
+
+				sync = 0;
+				sync = searchForNonTerminalUsingID(gr, topId)->first | searchForNonTerminalUsingID(gr, topId)->follow;
+
+				if((searchForTerminal(gr, ref[nxtT->id], 0)->follow | sync) == sync) {
+					popped = stackTop->ptr;
+					stackTop = stackTop->next;
+
+					nw = createTreeNode(33, popped);
+					addChildToNode(nw, popped);
+
+					tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
+					tmp->ptr = nw;
+					tmp->next = stackTop;
+					stackTop = tmp;
+				}
+				else {
+					nxtT = getToken();
+					while(nxtT == 56)
+						nxtT = getToken();
+				}
+
+
 			}
 			else {
 				popped = stackTop->ptr;
@@ -770,6 +1013,9 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 					// printf("creating tree node ... \n" );
 
 					nw = createTreeNode(rs->data->id, popped);
+
+					// printf("creating node : %x with parent : %x\n", nw, popped);
+
 					addChildToNode(nw, popped);
 
 					rs = rs->next;
@@ -790,7 +1036,6 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 				}
 
-
 			}
 
 		}
@@ -799,38 +1044,80 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	}
 
-	return 0;
+	if(errors) {
+		printf("\n\nThere are syntactical errors in the source code.\n");
+	}
+	else {
+		printf("\n\nInput source code has no syntactical errors.\n");
+	}
+
+	return root;
 
 }
 
 
 
 
+int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
 
-int main() {
-
-	grammar * gr = readGrammarFromFile("../modified-grammar/grammar final.txt");
-	
-	firstAndFollowSets * ff = computeFirstAndFollowSets(gr);
-
-	parseList * tableHead = initParseTable(gr, ff);
-
-	// printParseTable(tableHead);
-
-	// printGrammar(gr);
-	// dismantleGrammar(gr);
-
-	// // printFFSets(ff);
-
-	// // calculateFirstSets(gr);
+	int first = 0;
+	treeNode * child;
+	child = head->childL;
 
 
-	parseInputSourceCode(gr, "../testcases/test.case6", tableHead);
+	// printf("starting printing on head : %x\n", head);
 
-	
-	return 0;
+	if(child != NULL) {
+		while(child != NULL) {
+
+
+			printParseTree(gr, child, fp);
+			if(first == 0) {
+				// printing a non terminal 
+				// printf("node : %x\n", head);
+				
+				if(head->parent != NULL) {
+					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", searchForNonTerminalUsingID(gr, head->parent->id)->val, searchForNonTerminalUsingID(gr, head->id)->val);
+					fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", searchForNonTerminalUsingID(gr, head->parent->id)->val, searchForNonTerminalUsingID(gr, head->id)->val);	
+				}
+					
+				else{
+					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  searchForNonTerminalUsingID(gr, head->id)->val);
+					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  searchForNonTerminalUsingID(gr, head->id)->val);
+				}
+
+				first = 1;
+			}
+			child = child->next;
+
+
+		}
+	}
+	else {
+		if(head->tptr != NULL) {
+			// with the token 
+			if(head->tptr->id == 31 || head->tptr->id == 32 ){
+				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+			}
+			else { 
+				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+			}
+		}
+		else {
+			// printf("terminal node : %d\n", head->id);
+			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id], searchForNonTerminalUsingID(gr, head->parent->id)->val );
+			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id], searchForNonTerminalUsingID(gr, head->parent->id)->val );
+
+		}
+	}
+
+
+
 
 }
+
 
 
 
