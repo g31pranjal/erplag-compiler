@@ -1,0 +1,323 @@
+<program>				:		<moduleDeclarations> <otherModules> <driverModule> <otherModules>
+
+program.node = new Node(moduleDeclarations.node, otherModules.node, driverModule.node, otherModules.node)
+
+<moduleDeclarations>	:		<moduleDeclaration> <moduleDeclarations>
+
+moduleDeclarations.node = new Node(moduleDeclaration.node, moduleDeclarations.node)
+
+<moduleDeclarations>	:		EMPTY
+
+moduleDeclarations.node = NULL
+
+<moduleDeclaration>		:		DECLARE MODULE ID SEMICOL
+
+moduleDeclaration.node = new Leaf(ID, id.entry)
+
+<otherModules>			:		<module> <otherModules>
+
+otherModules.node = new Node(module.node, otherModules.node)
+
+<otherModules>			:		EMPTY
+
+otherModules.node = NULL
+
+<driverModule>			:		DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
+
+driverModule.node = new Node(moduleDef.node)
+
+<module>				:		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef>
+
+module.node = new Node(new Leaf(ID, id.entry), input_plist.node, ret.node, moduleDef.node)
+
+<ret>					:		RETURNS SQBO <output_plist> SQBC SEMICOL
+
+ret.node = new Node(output_plist.node)
+
+<ret>					:		EMPTY
+
+ret.node = NULL
+
+<input_plist>			:		<input_plist> COMMA ID COLON <dataType>
+
+input_plist.node = new node(input_plist.node, new Leaf(ID, id.entry), dataType.node)
+
+<input_plist>			:		ID COLON <dataType>
+
+input_plist.node = new node(new Leaf(ID, id.entry), dataType.node)
+
+<output_plist>			:		<output_plist> COMMA ID COLON <type>
+
+output_plist.node = new node(output_plist.node, new Leaf(ID, id.entry), type.node)
+
+<output_plist>	 		:		COMMA ID COLON <type> 
+
+output_plist.node = new node(new Leaf(ID, id.entry), type.node)
+
+<type>					:		INTEGER
+
+type.node = new Leaf(INTEGER)
+
+<type>					:		REAL
+
+type.node = new Leaf(REAL)
+
+<type>					:		BOOLEAN
+
+type.node = new Leaf(BOOLEAN)
+
+<dataType>				:		<type>
+
+dataType.node = new Node(type.node)
+
+<dataType>				:		ARRAY SQBO <range> SQBC OF <type>
+
+dataType.node = new Node(range.node, type.node)
+
+<moduleDef>				:		START <statements> END
+
+moduleDef.node = new Node(statements.node)
+
+<statements>			:		<statement> <statements>
+
+statements.node = new Node(statement.node, statements.node)
+
+<statements>			:		EMPTY
+
+statements.node = NULL
+
+<statement>				:		<ioStmt>
+
+statement.node = new Node(ioStmt.node)
+
+<statement>				:		<simpleStmt>
+
+statement.node = new Node(simpleStmt.node)
+
+<statement>				:		<declareStmt>
+
+statement.node = new Node(declareStmt.node)
+
+<statement>				:		<condionalStmt>
+
+statement.node = new Node(condionalStmt.node)
+
+<statement>				:		<iterativeStmt>
+
+statement.node = new Node(iterativeStmt.node)
+
+<ioStmt>				:		GET_VALUE BO ID <whichId> BC SEMICOL
+
+ioStmt.node = new Node('GET_VALUE', new Leaf(ID, id.entry), whichId.node)
+
+<ioStmt>				:		PRINT BO <print_val> BC SEMICOL
+
+ioStmt.node = new Node('PRINT', print_val.node)
+
+<print_val>				:		ID <whichId>
+
+print_val.node = new Node(new Leaf(ID, id.entry), whichId.node)
+
+<print_val>				:		NUM
+
+print_val.node = new Leaf(NUM, num.entry)
+
+<print_val>				:		RNUM
+
+print_val.node = new Leaf(RNUM, rnum.entry)
+
+<print_val>				:		TRUE
+
+print_val.node = new Leaf('TRUE')
+
+<print_val>				:		FALSE
+
+print_val.node = new Leaf('FALSE')
+
+<whichId>				:		SQBO <index> SQBC
+
+whichId.node = new Node(index.node)
+
+<whichId>				:		EMPTY
+
+whichId.node = NULL
+
+<index>					:		NUM
+
+index.node = new Leaf(NUM, num.entry)
+
+<index>					:		ID
+
+index.node = new Leaf(ID, id.entry)
+
+<simpleStmt>			:		<assignmentStmt>
+
+simpleStmt.node = new Node(assignmentStmt.node)
+
+<simpleStmt>			:		<moduleReuseStmt>
+
+simpleStmt.node = new Node(moduleReuseStmt.node)
+
+<assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> SEMICOL
+
+assignmentStmt.node = new Node(new Leaf(ID, id.entry), whichId.node, ':=', expression.node)
+
+<moduleReuseStmt>		:		<optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
+
+assignmentStmt.node = new Node(optional.node, new Leaf(ID, id.entry), idList.node)
+
+<optional>				:		SQBO <idList> SQBC ASSIGNOP
+
+optional.node = new Node(idList.node, ':=')
+
+<optional>				:		EMPTY
+
+optional.node = NULL
+
+<idList>				:		<idList> COMMA ID
+
+idList.node = new Node(idList.node, new Leaf(ID, id.entry))
+
+<idList>				:		ID
+
+idList.node = new Leaf(ID, id.entry)
+
+<expression>			:		<arithOrBoolExpr>
+
+expression.node = new Node(arithOrBoolExpr.node)
+
+<expression>			:		MINUS BO <arithmeticExpr> BC
+
+expression.node = new Node('-', arithOrBoolExpr.node)
+
+<arithOrBoolExpr> 		: 		<arithOrBoolExpr> AND <anyTerm>
+
+arithOrBoolExpr.node = new Node(arithmaticExpr.node, 'AND', anyTerm.node)
+
+<arithOrBoolExpr> 		: 		<arithOrBoolExpr> OR <anyTerm>
+
+arithOrBoolExpr.node = new Node(arithmaticExpr.node, 'OR' , anyTerm.node)
+
+<arithOrBoolExpr> 		:		<anyTerm>
+
+arithOrBoolExpr.node = new Node(anyTerm.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> LE <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '<=',arithmeticExpr.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> LT <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '<',arithmeticExpr.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> GE <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '>=',arithmeticExpr.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> GT <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '>',arithmeticExpr.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> EQ <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '==',arithmeticExpr.node)
+
+<anyTerm> 				:		<anyTerm> <relationalOp> NE <arithmeticExpr>
+
+anyTerm.node = new Node(anyTerm.node, '!=',arithmeticExpr.node)
+
+<anyTerm> 				:		<arithmeticExpr>
+
+anyTerm.node = new Node(arithmeticExpr.node)
+
+<arithmeticExpr>		:		<arithmeticExpr> PLUS <term>
+
+arithmeticExpr.node = new Node(arithmeticExpr.node, '+', term.node)
+
+<arithmeticExpr>		:		<arithmeticExpr> MINUS <term>
+
+arithmeticExpr.node = new Node(arithmeticExpr.node, '-', term.node)
+
+<arithmeticExpr>		:		<term> 
+
+arithmeticExpr.node = new Node(term.node)
+
+<term>					:		<term> MUL <factor>
+
+term.node = new Node(term.node, '*', factor.node)
+
+<term>					:		<term> DIV <factor>
+
+term.node = new Node(term.node, '/', factor.node)
+
+<term>					:		<factor>
+
+term.node = new Node(factor.node)
+
+<factor>				:		BO <arithOrBoolExpr> BC
+
+factor.node = new Node(arithOrBoolExpr.node)
+
+<factor>				:		<var>
+
+factor.node = new Node(var.node)
+
+<var>					:		ID <whichId>
+
+var.node = new Node(new Leaf(ID, id.entry), whichId.entry)
+
+<var>					:		NUM
+
+var.node = new Leaf(NUM, num.entry)
+
+<var>					:		RNUM
+
+var.node = new Leaf(RNUM, rnum.entry)
+
+<declareStmt>			:		DECLARE <idList> COLON <dataType> SEMICOL
+
+declareStmt.node = new Node(idList.node, dataType.node)
+
+<condionalStmt>			:		SWITCH BO <expression> BC START <caseStmts> <default> END
+
+condionalStmt.node = new Node(expression.node, caseStmt.node, default.node)
+
+<caseStmts>				:		<caseStmts> CASE <value> COLON <statements> BREAK SEMICOL
+
+caseStmts.node = new Node(caseStmts.node, value.node, statements.node)
+
+<caseStmts>				:		CASE <value> COLON <statements> BREAK SEMICOL
+
+caseStmts.node = new Node(value.node, statements.node)
+
+<value>					:		NUM
+
+value.node = new Leaf(NUM, num.entry)
+
+<value>					:		TRUE
+
+value.node = new Leaf('TRUE')
+
+<value>					:		FALSE
+
+value.node = new Leaf('FALSE')
+
+<default>				:		DEFAULT COLON <statements> BREAK SEMICOL
+
+default.node = new Node(statements.node)
+
+<default>				:		EMPTY
+
+default.node = NULL
+
+<iterativeStmt>			:		FOR BO ID IN <range> BC START <statements> END
+
+iterativeStmt.node = new Node(new Leaf(ID, id.entry), range.node, statements.node)
+
+<iterativeStmt>			:		WHILE BO <arithOrBoolExpr> BC START <statements> END
+
+iterativeStmt.node = new Node(arithOrBoolExpr.node, statements.node)
+
+<range>					:		NUM RANGEOP NUM
+
+range.node = new Node(new Leaf(NUM, num.entry), new Leaf(NUM, num.entry))

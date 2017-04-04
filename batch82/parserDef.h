@@ -120,7 +120,7 @@ struct tn {
 	treeNode * next;
 	treeNode * prev;
 
-	int id;
+	element * id;
 
 	// for terminal
 	token * tptr;

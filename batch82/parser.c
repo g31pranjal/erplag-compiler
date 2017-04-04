@@ -158,7 +158,7 @@ int printParseTable(parseList * pl) {
 int printStackWrapperSeq(stackWrapper * head) {
 
 	while(head != NULL) {
-		printf("%d ", head->ptr->id);
+		printf("%s \n", head->ptr->id->val);
 		head = head->next;
 	}
 
@@ -264,8 +264,18 @@ element * searchForTerminal(grammar * gr, char * trm_name, int addImp) {
 	}
 	nw->occ_lhs_num = 0;
 	nw->occ_rhs_num = 0;
-	
 	strcpy(nw->val, trm_name);
+
+	nw->follow = 0;
+	unsigned long long ii = 1;
+	int j = 0;
+	while(strcmp(ref[j], nw->val) != 0) {
+		ii = ii<<1;
+		j++;
+	}
+	nw->first = ii;
+	nw->id = j;
+	
 	if(addImp)
 		nw->occ_rhs[nw->occ_rhs_num++] = gr->rule_num;
 
@@ -675,23 +685,6 @@ firstAndFollowSets * computeFirstAndFollowSets(grammar * gr) {
 		}
 	}
 
-	// set first, follow and id of terminals
-
-	for(i=0;i<26;i++) {
-		nw = gr->trm[i];
-		while(nw != NULL) {
-			nw->follow = 0;
-			unsigned long long i = 1;
-			int j = 0;
-			while(strcmp(ref[j], nw->val) != 0) {
-				i = i<<1;
-				j++;
-			}
-			nw->first = i;
-			nw->id = j;
-			nw = nw->next;
-		}
-	}
 	
 	// printf("\n\n FIRST \n\n");
 	calculateFirstSets(gr);
@@ -796,7 +789,7 @@ parseList * createParseTable(grammar * gr, firstAndFollowSets * ff) {
 }
 
 
-treeNode * createTreeNode(int id, /*token * tk,*/ treeNode * parent) {
+treeNode * createTreeNode(element * id, /*token * tk,*/ treeNode * parent) {
 	
 	treeNode * nw;
 	nw = (treeNode *)malloc(sizeof(treeNode));
@@ -860,27 +853,6 @@ rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
 
 }
 
-element * searchForNonTerminalUsingID(grammar * gr, int id) {
-// if addImp is TRUE, record ruleNo for which rule the terminal is accessed
-	
-
-	int i=0;
-
-	for(i=0;i<26;i++) {
-		element * node = gr->ntrm[i];
-
-		while(node != NULL) {
-			if(node->id == id) {
-				return node;
-			}
-			node = node->next;
-		}
-		
-	}
-
-	return NULL;
-}
-
 
 treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
@@ -888,16 +860,17 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	treeNode * root, * eof, *nw, * rightend, *popped;
 	rule * rl;
-	int topId, errors = 0;
+	int errors = 0;
 	unsigned long long sync;
 	stackWrapper * stackTop, * tmp;
 	ruleSeg * rs;
+	element * topEle;
 
 	// eof, to be placed at the end of stack
 
 	eof = (treeNode *)malloc(sizeof(treeNode));
 	eof->parent = eof->childR = eof->childL = eof->next = eof->prev = NULL;
-	eof->id = 57;
+	eof->id = searchForTerminal(gr, "EOF", 0);
 	eof->tptr = NULL;
 
 	tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
@@ -908,7 +881,7 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	// create root node, add root to stack
 
-	root = createTreeNode(gr->start->id, NULL);
+	root = createTreeNode(gr->start, NULL);
 
 	// printf("creating node : %x\n", root);
 
@@ -919,32 +892,25 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 	tmp->next = stackTop;
 	stackTop = tmp;
 
+
 	token * nxtT;
 	nxtT = getToken();
 	while(nxtT->id == 56)
 		nxtT = getToken();
 
 	while(stackTop != NULL) {
-
-		// printf("\n\n\n");
-
 		// printStackWrapperSeq(stackTop);
 		// printf("\n\n");
-		
-		topId = stackTop->ptr->id;
 
-		// printf("top id %d\n", topId);
+		topEle = stackTop->ptr->id;
 
-		// pop out empty from the stack
-		if(topId == 33) {
+		if(topEle->id == 33) {
 			stackTop = stackTop->next;
 		} 
 		// terminal
-		else if(topId >= 0 && topId < 100) {
+		else if(topEle->id >= 0 && topEle->id < 100) {
 
-			// printf("%s\n", ref[topId]);
-
-			if(topId == nxtT->id) {
+			if(topEle->id == nxtT->id) {
 				stackTop->ptr->tptr = nxtT;
 				// free the stack wrapper here
 				stackTop = stackTop->next;
@@ -955,38 +921,32 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 			else {
 				// error : top stack terminal do not match token (from lexer)
 				errors = 1;
-				printf("ERROR_5 : The token %s for the lexeme \'%s\' does not match at line %d\n", ref[stackTop->ptr->id], nxtT->val, nxtT->lno);	
+				printf("%d\n", nxtT->id);
+				printf("ERROR_5 : The token %s for the lexeme \'%s\' does not match at line %d\n", stackTop->ptr->id->val, nxtT->val, nxtT->lno);	
 				stackTop = stackTop->next;
 				nxtT = getToken();
 				while(nxtT->id == 56)
 					nxtT = getToken();
-
 			}
 
 		}
 		else {
 
-			// printf("got a non terminal\n");
+			rl = SearchRuleInParseTable(pl, topEle->id, nxtT->id);
 
-			// printf("%s\n", nxtT->lxm);
-
-			rl = SearchRuleInParseTable(pl, topId, nxtT->id);
-
-			// printf("%x\n", rl);
-			
 			if(rl == NULL) {
 
 				errors = 1;
-				printf("ERROR_5 : The non terminal %s does not produce lexeme \'%s\' at line %d\n", searchForNonTerminalUsingID(gr, topId)->val, nxtT->val, nxtT->lno );
+				printf("ERROR_5 : The non terminal %s does not produce lexeme \'%s\' at line %d\n", topEle->val, nxtT->val, nxtT->lno );
 
 				sync = 0;
-				sync = searchForNonTerminalUsingID(gr, topId)->first | searchForNonTerminalUsingID(gr, topId)->follow;
+				sync = topEle->first | topEle->follow;
 
 				if((searchForTerminal(gr, ref[nxtT->id], 0)->follow | sync) == sync) {
 					popped = stackTop->ptr;
 					stackTop = stackTop->next;
 
-					nw = createTreeNode(33, popped);
+					nw = createTreeNode(searchForTerminal(gr, "EMPTY", 0), popped);
 					addChildToNode(nw, popped);
 
 					tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
@@ -999,8 +959,6 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 					while(nxtT == 56)
 						nxtT = getToken();
 				}
-
-
 			}
 			else {
 				popped = stackTop->ptr;
@@ -1009,23 +967,14 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 				rs = rl->rhstop;
 
 				while(rs != NULL) {
-
-					// printf("creating tree node ... \n" );
-
-					nw = createTreeNode(rs->data->id, popped);
-
-					// printf("creating node : %x with parent : %x\n", nw, popped);
-
+					nw = createTreeNode(rs->data, popped);
 					addChildToNode(nw, popped);
-
 					rs = rs->next;
 				}
 
 				rightend = popped->childR;
 
 				while(rightend != NULL) {
-
-					// printf("pushing in stack ... \n" );
 
 					tmp = (stackWrapper *)malloc(sizeof(stackWrapper));
 					tmp->ptr = rightend;			
@@ -1035,12 +984,8 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 					rightend = rightend->prev;
 
 				}
-
 			}
-
 		}
-
-		// break;
 
 	}
 
@@ -1064,12 +1009,11 @@ int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
 	treeNode * child;
 	child = head->childL;
 
+	// printf("starting printing on head : %x\n", head->id->id);
 
-	// printf("starting printing on head : %x\n", head);
+	if( head->id->id > 100 && child != NULL) {
 
-	if(child != NULL) {
 		while(child != NULL) {
-
 
 			printParseTree(gr, child, fp);
 			if(first == 0) {
@@ -1077,13 +1021,13 @@ int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
 				// printf("node : %x\n", head);
 				
 				if(head->parent != NULL) {
-					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", searchForNonTerminalUsingID(gr, head->parent->id)->val, searchForNonTerminalUsingID(gr, head->id)->val);
-					fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", searchForNonTerminalUsingID(gr, head->parent->id)->val, searchForNonTerminalUsingID(gr, head->id)->val);	
+					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+					fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
 				}
 					
 				else{
-					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  searchForNonTerminalUsingID(gr, head->id)->val);
-					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  searchForNonTerminalUsingID(gr, head->id)->val);
+					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
 				}
 
 				first = 1;
@@ -1093,22 +1037,34 @@ int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
 
 		}
 	}
+	else if(head->id->id > 100 && child == NULL) {
+		printf("non terminal with no children. something fishy\n");
+		if(head->parent != NULL) {
+			printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+			fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
+		}
+			
+		else{
+			printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+			fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+		}
+	}
 	else {
 		if(head->tptr != NULL) {
 			// with the token 
 			if(head->tptr->id == 31 || head->tptr->id == 32 ){
-				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, searchForNonTerminalUsingID(gr, head->parent->id)->val);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
 			}
 			else { 
-				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, searchForNonTerminalUsingID(gr, head->parent->id)->val);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, searchForNonTerminalUsingID(gr, head->parent->id)->val);
+				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
 			}
 		}
 		else {
 			// printf("terminal node : %d\n", head->id);
-			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id], searchForNonTerminalUsingID(gr, head->parent->id)->val );
-			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id], searchForNonTerminalUsingID(gr, head->parent->id)->val );
+			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
 
 		}
 	}
