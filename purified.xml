@@ -1,79 +1,14 @@
 <program>				:		<moduleDeclarations> <otherModules> <driverModule> <otherModules>
-
-<!-- <moduleDeclarations>	:		<moduleDeclaration> <moduleDeclarations> -->
-
-modified
 <moduleDeclarations>	:		{ ID } 
-
-<!-- <moduleDeclarations>	:		EMPTY -->
-<!-- <moduleDeclaration>		:		DECLARE MODULE ID SEMICOL -->
-
-<!-- <otherModules>			:		<module> <otherModules> -->
-modified
 <otherModules>			:		{ <module> }
-
-<!-- <otherModules>			:		EMPTY -->
-
-
 <driverModule>			:		<!-- DRIVERDEF DRIVER PROGRAM DRIVERENDDEF --> <moduleDef>
-
-<!-- <module>				:		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef> -->
-modified
 <module>				:		ID <input_plist> <output_plist> <moduleDef>
-
-<!-- <input_plist>			:		ID COLON <dataType> <input_plistRec> -->
-modified 
 <input_plist>			:		{ ID <dataType> }  
-
-<!-- <input_plistRec>		:		COMMA ID COLON <dataType> <input_plistRec> -->
-<!-- <input_plistRec>		:		EMPTY -->
-
-<!-- <ret>					:		RETURNS SQBO <output_plist> SQBC SEMICOL -->
-<!-- <ret>					:		EMPTY -->
-
-<!-- <output_plist>			:		ID COLON <type> <output_plistRec> -->
-modified
 <output_plist>			:		{ ID (INTEGER/REAL/BOOLEAN) }
-
-<!-- <output_plistRec>		:		COMMA ID COLON <type> <output_plistRec> -->
-<!-- <output_plistRec>		:		EMPTY -->
-
-
-<!-- <type>					:		INTEGER
-<type>					:		REAL
-<type>					:		BOOLEAN -->
-
-
-<!-- <dataType>				:		<type> -->
-modified
 <dataType>				:		(INTEGER/REAL/BOOLEAN)
-
-<!-- <dataType>				:		ARRAY SQBO <range> SQBC OF <type> -->
-modified
 <dataType>				:		ARRAY <!-- SQBO --> <range> <!-- SQBC OF --> (INTEGER/REAL/BOOLEAN)
-
-
-
-
 <moduleDef>				:		<!-- START --> <statements> <!-- END -->
-
-<!-- <statements>			:		<statement> <statements> -->
-
-modified
 <statements>			:		{ <ioStmt> / <simpleStmt> / <declareStmt> / <condionalStmt> / <iterativeStmt> }
- 
-<!-- <statements>			:		EMPTY -->
-<!-- 
-<statement>				:		<ioStmt>
-<statement>				:		<simpleStmt>
-<statement>				:		<declareStmt>
-<statement>				:		<condionalStmt>
-<statement>				:		<iterativeStmt> -->
-<!-- <statement>				:		SEMICOL -->
-
-
-
-
 
 
 
@@ -108,7 +43,6 @@ modified
 
 <expression>			:		<arithOrBoolExpr>
 <expression>			:		MINUS <!-- BO --> <arithmeticExpr> <!-- BC -->
-
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
 <arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
 <!-- <arithOrBoolExprRec> 	:		EMPTY -->

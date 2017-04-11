@@ -1,3 +1,27 @@
+
+declare module square;
+declare module diff;
+declare module plus;
+declare module minus;
+
+<<module square>>
+takes input [x:integer, y:real, z:boolean, alpha : array [0..5] of integer];
+start
+	declare a : array [0..10] of integer;
+	value:= x*x;
+	value:= x-x;
+end
+
+
+
+<<module diff>>
+takes input [x:integer];
+returns [value:integer];
+start
+	value:= x*x;
+end
+
+
 <<<driver program>>>
 start
 	declare v_1_2_3:integer;
@@ -5,14 +29,19 @@ start
 	declare result_:integer;
 	[result_]:=use module square with parameters v_1_2_3;
 	print(result);
+
+	for (i in 0..100)
+	start 
+		x := a;
+		for (j in 0..12)
+		start 
+			j := 0;
+		end
+	end
+
 end
 
-<<module square>>
-takes input [x:integer];
-returns [value:integer];
-start
-	value:= x*x;
-end
+
 
 **notice that this test case does not declare the module before the driver module, still it is syntactically correct
 as moduleDeclarations is optional. Testing whether a module is declared before usage is a matter of semantic analysis**
