@@ -7,7 +7,7 @@ Tanaya Jha (2013B3A7304P)
 */
 
 #include "lexerDef.h"
-#include "stage2Def.h"
+#include "scopeDef.h"
 
 #ifndef _grammar
 
@@ -123,7 +123,7 @@ struct tn {
 	treeNode * next;
 	treeNode * prev;
 
-	
+
 	element * id;
 
 	symbolScope * scope;
