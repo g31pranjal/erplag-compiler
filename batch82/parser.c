@@ -797,9 +797,11 @@ treeNode * createTreeNode(element * id, /*token * tk,*/ treeNode * parent) {
 	nw->parent = parent;
 	nw->childL = NULL;
 	nw->childR = NULL;
-
 	nw->next = NULL;
 	nw->prev = NULL;
+
+	nw->scope = NULL;
+	nw->se = NULL;
 
 	nw->id = id;
 
@@ -1003,7 +1005,7 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 
 
-int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
+int printParseTree( treeNode * head, FILE * fp)  {
 
 	int first = 0;
 	treeNode * child;
@@ -1015,7 +1017,7 @@ int printParseTree(grammar * gr, treeNode * head, FILE * fp)  {
 
 		while(child != NULL) {
 
-			printParseTree(gr, child, fp);
+			printParseTree(child, fp);
 			if(first == 0) {
 				// printing a non terminal 
 				// printf("node : %x\n", head);

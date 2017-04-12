@@ -7,6 +7,7 @@ Tanaya Jha (2013B3A7304P)
 */
 
 #include "lexerDef.h"
+#include "stage2Def.h"
 
 #ifndef _grammar
 
@@ -113,6 +114,8 @@ struct pl {
 typedef struct tn treeNode;
 
 struct tn {
+
+	// linkage 
 	treeNode * parent;
 	treeNode * childL;
 	treeNode * childR;
@@ -120,10 +123,16 @@ struct tn {
 	treeNode * next;
 	treeNode * prev;
 
+	
 	element * id;
+
+	symbolScope * scope;
+	symbolEntry * se;
 
 	// for terminal
 	token * tptr;
+
+
 
 };
 

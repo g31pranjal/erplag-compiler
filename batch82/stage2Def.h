@@ -4,6 +4,9 @@ typedef struct se symbolEntry;
 typedef struct sy symbolScope;
 
 
+#ifndef _scopeStruct
+
+#define _scopeStruct
 
 struct se {
 	char identifier[25];
@@ -42,3 +45,6 @@ struct sy {
 	symbolEntry * seHead;
 
 };
+
+
+#endif

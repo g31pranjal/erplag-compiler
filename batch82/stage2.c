@@ -74,7 +74,7 @@ int constructAST(treeNode * head) {
 	if(head->childL != NULL) {
 		child = head->childL;
 		while(child != NULL) {
-			printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
+			// printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
 
 			if(child->id->id >= 0 && child->id->id < 100) {
 				// terminal
@@ -87,7 +87,7 @@ int constructAST(treeNode * head) {
 					}
 				}
 				if(toRemove) {
-					printf(" -- removed\n");
+					// printf(" -- removed\n");
 					removeTreeNode(head, child);	
 				}
 
@@ -97,7 +97,7 @@ int constructAST(treeNode * head) {
 
 				constructAST(child);
 				if(child->childL == NULL && child->childR == NULL) {
-					printf("removing %s\n", child->id->val);
+					// printf("removing %s\n", child->id->val);
 					removeTreeNode(head, child);	
 				}
 				else {
@@ -146,13 +146,15 @@ int constructAST(treeNode * head) {
 						liftUpNode(child);
 
 					// <arithOrBoolExprRec> compression, lifting logical op
-					else if(strcmp(child->id->val, "<arithOrBoolExprRec>") == 0) {
-						child->parent-> id  = child->childL->id;
-						child->parent->tptr = child->childL->tptr;
-						child->childL->tptr = NULL;
-						removeTreeNode(child, child->childL);
-						liftUpNode(child);
-					}
+					// else if( ( strcmp(child->id->val, "<arithOrBoolExprRec>") == 0 || strcmp(child->id->val, "AND") == 0 || strcmp(child->id->val, "OR") == 0 )  &&  child->childL != NULL )  {
+
+					// 	child->parent-> id  = child->childL->childL->id;
+					// 	child->parent->tptr = child->childL->childL->tptr;
+					// 	child->childL->tptr = NULL;
+					// 	removeTreeNode(child->, child->childL);
+					// 	removeTreeNode(child, child->childL);
+					// 	liftUpNode(child);
+					// }
 
 				}
 			}
@@ -189,6 +191,26 @@ symbolScope * stackScope(symbolScope * parent, char * st) {
 
 }
 
+symbolEntry * lookupSymbolEntry(char * identifier, symbolScope * scope, int line ) {
+
+	symbolEntry * se;
+
+	while(scope != NULL) {
+		se = scope->seHead;
+		while(se != NULL) {
+			if(strcmp(se->identifier, identifier) == 0) {
+				se->linesUsed[se->linesUsedNum++] = line;
+				return se;
+			}
+			se = se->next;
+		}
+		scope = scope->parent;
+	}
+
+	printf("ERROR : An identifier must be declared before its use. %s\n", identifier);
+	return NULL;
+}
+
 int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s, int e, int line, symbolScope * scope) {
 
 	symbolEntry * sStack, * newEntry;
@@ -198,18 +220,18 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 
 	while(sStack != NULL) {
 		if(strcmp(sStack->identifier, identifier) == 0) {
-			if(sStack->usage == 5 && usage == 2)
+			if(sStack->usage == 5 && usage == 2) {
 				sStack->usage = 2;
-			else 
-				printf("ERROR : identifier already exists in the scope. Cannot re-declare\n");
-			enter = 0;
-			break;
+				return sStack;
+			}
+			else {
+				printf("ERROR : An identifier cannot be declared multiple times in the same scope.\n");
+				return NULL;
+			}
 		}
-		printf("%s -> ", sStack->identifier);
 		sStack = sStack->next;
 	}
-	printf("\n");
-
+	
 	if(enter) {
 		newEntry = (symbolEntry *)malloc(sizeof(symbolEntry));
 		memset(newEntry->identifier, 0, sizeof(newEntry->identifier));
@@ -229,7 +251,29 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 		scope->seHead = newEntry;
 
 	}
+
+	return newEntry;
 }
+
+int printAST(treeNode * head) {
+	treeNode * child;
+	child = head->childL;
+
+	while(child != NULL) {
+		printAST(child);
+		child = child->next;
+	}
+
+	if(head->id->type == 0 ) {
+		printf("%s, %s\n", head->tptr->val, head->id->val);
+	}
+	else {
+		// non terminal 
+		printf("%s\n", head->id->val);
+	}
+
+}
+
 
 int printScopeStructure(symbolScope * head) {
 	
@@ -271,7 +315,10 @@ symbolScope * initScopeStructure(treeNode * head) {
 int iterOverScope(treeNode * head, symbolScope * scope) {
 
 	symbolScope * newScope;
+	symbolEntry * se;
 	treeNode * child, * dT;
+
+	head->scope = scope;
 
 	if(head->childL != NULL) {
 		child = head->childL;
@@ -287,7 +334,7 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 				// 2. input_plist vairables (entry).
 				// 3. output_plist variables (entry).
 				// 4. module definition names (entry).
-				// 6. module declaration (entry)
+				// 5. module declaration (entry)
 
 				if(child->id->id == 30) {
 
@@ -299,14 +346,14 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 							// simple type
 							printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 0, -1, -1, child->tptr->lno); 
 							
-							addSymbolEntry(child->tptr->val, 1, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope); 
+							se = addSymbolEntry(child->tptr->val, 1, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope); 
 						
 						}
 						else {
 							// array type
 							printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno); 
 
-							addSymbolEntry(child->tptr->val, 1, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope); 
+							se = addSymbolEntry(child->tptr->val, 1, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope); 
 						
 						}
 					}
@@ -319,14 +366,14 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 							// simple type
 							printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 0, -1, -1, child->tptr->lno); 
 							
-							addSymbolEntry(child->tptr->val, 3, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope); 
+							se = addSymbolEntry(child->tptr->val, 3, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope); 
 						
 						}
 						else {
 							// array type
 							printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno); 
 
-							addSymbolEntry(child->tptr->val, 3, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope); 
+							se = addSymbolEntry(child->tptr->val, 3, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope); 
 						}
 					}
 
@@ -336,7 +383,7 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 						
 						printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, child->next->id->val, 0, -1, -1, child->tptr->lno); 
 						
-						addSymbolEntry(child->tptr->val, 4, child->next->id->val, 0, -1, -1, child->tptr->lno, scope); 
+						se = addSymbolEntry(child->tptr->val, 4, child->next->id->val, 0, -1, -1, child->tptr->lno, scope); 
 						
 					}
 					
@@ -346,31 +393,42 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 
 						printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
 						
-						addSymbolEntry(child->tptr->val, 2, "", 0, -1, -1, child->tptr->lno, scope->parent); 
+						se = addSymbolEntry(child->tptr->val, 2, "", 0, -1, -1, child->tptr->lno, scope->parent); 
 					}
 
-					// case 6
+					// case 5
 					else if( strcmp(child->parent->id->val, "<moduleDeclarations>") == 0 ) {
 						// printf("c5 entry into scope for %s\n", child->tptr->val);
 					
 						printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
 						
-						addSymbolEntry(child->tptr->val, 5, "", 0, -1, -1, child->tptr->lno, scope); 
+						se = addSymbolEntry(child->tptr->val, 5, "", 0, -1, -1, child->tptr->lno, scope); 
 					}
+					else {
+						// case of lookup in the symbol table
+						se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno);
+
+					}
+					
+					if(se == NULL) {
+						// ERRORS EXIST RELATED TO THE SYMBOL TABLE
+					}
+
+					child->se = se;
+
 				}
 
 			}
 			else {
 				// non terminal
+
 				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
 					newScope = stackScope(scope, child->id->val);	
 	 				
-	 				printf("adding new scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
-
+	 				// printf("adding new scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
 	 				iterOverScope(child, newScope);
-
-	 				printf("exiting scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
+	 				// printf("exiting scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
 
 				}
 				else {
@@ -400,7 +458,7 @@ int iterOverScope(treeNode * head, symbolScope * scope) {
 
 int main() {
 
-	char * filename = "testcases/testcase4.txt";
+	char * filename = "testcases/testcase5.txt";
 	char * writefn  = "out.put";
 
 	grammar * gr = NULL;
@@ -422,16 +480,16 @@ int main() {
 		head = parseInputSourceCode(gr, filename, tableHead);
 	}
 
+	// FILE * fp = fopen(writefn, "w+");
+	// printParseTree(head, fp);
+
 	constructAST(head);
 
-	FILE * fp = fopen(writefn, "w+");
-	printParseTree(gr, head, fp);
+	// printAST(head);
 
 	sHead = initScopeStructure(head);
 
 	printScopeStructure(sHead);
-
-
 										
 	fclose(fp);
 

@@ -8,7 +8,7 @@ declare module minus;
 takes input [x:integer, y:real, z:boolean, alpha : array [0..5] of integer];
 start
 	declare a : array [0..10] of integer;
-	value:= x*x;
+	value:= x AND y AND z;
 	value:= x-x;
 end
 
@@ -24,7 +24,7 @@ end
 
 <<<driver program>>>
 start
-	declare v_1_2_3:integer;
+	declare v_1_2_3,i,j:integer;
 	get_value(v_1_2_3);
 	declare result_:integer;
 	[result_]:=use module square with parameters v_1_2_3;
