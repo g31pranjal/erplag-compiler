@@ -7,6 +7,7 @@
 #include "lexer.c"
 #include "ast.c"
 #include "scope.c"
+#include "semantics.c"
 
 
 
@@ -30,22 +31,41 @@ int main() {
 	if(tableHead == NULL) {
 		tableHead = createParseTable(gr, ff);
 	}
+
+	int errors;
 	if(head == NULL) {
-		head = parseInputSourceCode(gr, filename, tableHead);
+		head = parseInputSourceCode(gr, filename, tableHead, &errors);
 	}
 
-	// FILE * fp = fopen(writefn, "w+");
+	if(!errors) 
+		constructAST(head);
+	else
+		printf("Errors exist in formation of parse tree. Cannot proceed\n");
+
+	if(!errors) 
+		sHead = initScopeStructure(head, &errors);
+	
+	printf("error reporting : %d\n", errors);
+
+
+
+
+
+
+
+
+
+	FILE * fp = fopen(writefn, "w+");
 	// printParseTree(head, fp);
 
-	constructAST(head);
-	printParseTree(head, fp);
+	// printParseTree(head, fp);
 
-	sHead = initScopeStructure(head);
+	// errors can arise in here 
 
-	printScopeStructure(sHead);
-										
+	// printScopeStructure(sHead);
+	
+	// checkSemantics(head);
+
 	fclose(fp);
-
-
 
 }

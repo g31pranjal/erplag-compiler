@@ -71,7 +71,7 @@ int constructAST(treeNode * head) {
 		while(child != NULL) {
 			// printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
 
-			if(child->id->id >= 0 && child->id->id < 100) {
+			if(child->childL == NULL) {
 				// terminal
 				
 				toRemove = 1;
@@ -152,7 +152,6 @@ int constructAST(treeNode * head) {
 					// <arithOrBoolExprRec> compression
 					else if( child->childL != NULL && (strcmp(child->childL->id->val, "AND") == 0 || strcmp(child->childL->id->val, "OR") == 0 ) && (strcmp(child->parent->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->parent->id->val, "<arithOrBoolExprRec>") == 0 )  )  {
 						
-						printf("and/or is child of %s\n", child->id->val);
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
 						child->childL->tptr = NULL;
@@ -164,7 +163,6 @@ int constructAST(treeNode * head) {
 					// <anyTermRec> compression
 					else if( child->childL != NULL && (strcmp(child->childL->id->val, "LT") == 0 || strcmp(child->childL->id->val, "LE") == 0 || strcmp(child->childL->id->val, "GE") == 0 || strcmp(child->childL->id->val, "GT") == 0 || strcmp(child->childL->id->val, "NE") == 0 || strcmp(child->childL->id->val, "EQ") == 0 ) && (strcmp(child->parent->id->val, "<anyTerm>") == 0 || strcmp(child->parent->id->val, "<anyTermRec>") == 0 )  )  {
 						
-						printf("lt/le/gt/ge/ne/eq is child of %s\n", child->id->val);
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
 						child->childL->tptr = NULL;
@@ -176,7 +174,6 @@ int constructAST(treeNode * head) {
 					// <arithmeticExprRec> compression
 					else if( child->childL != NULL && (strcmp(child->childL->id->val, "PLUS") == 0 || strcmp(child->childL->id->val, "MINUS") == 0 ) && (strcmp(child->parent->id->val, "<arithmeticExpr>") == 0 || strcmp(child->parent->id->val, "<arithmeticExprRec>") == 0 )  )  {
 						
-						printf("plus/minus is child of %s\n", child->id->val);
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
 						child->childL->tptr = NULL;
@@ -188,7 +185,6 @@ int constructAST(treeNode * head) {
 					// <termRec> compression
 					else if( child->childL != NULL && (strcmp(child->childL->id->val, "MUL") == 0 || strcmp(child->childL->id->val, "DIV") == 0 ) && (strcmp(child->parent->id->val, "<term>") == 0 || strcmp(child->parent->id->val, "<termRec>") == 0 )  )  {
 						
-						printf("plus/minus is child of %s\n", child->id->val);
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
 						child->childL->tptr = NULL;

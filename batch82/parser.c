@@ -789,7 +789,7 @@ parseList * createParseTable(grammar * gr, firstAndFollowSets * ff) {
 }
 
 
-treeNode * createTreeNode(element * id, /*token * tk,*/ treeNode * parent) {
+treeNode * createTreeNode(element * id, treeNode * parent) {
 	
 	treeNode * nw;
 	nw = (treeNode *)malloc(sizeof(treeNode));
@@ -802,6 +802,8 @@ treeNode * createTreeNode(element * id, /*token * tk,*/ treeNode * parent) {
 
 	nw->scope = NULL;
 	nw->se = NULL;
+
+	memset(nw->type, 0, 25);
 
 	nw->id = id;
 
@@ -856,13 +858,13 @@ rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
 }
 
 
-treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
+treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, int * errors) {
 
 	setUpStream(filename);
 
 	treeNode * root, * eof, *nw, * rightend, *popped;
 	rule * rl;
-	int errors = 0;
+	*errors = 0;
 	unsigned long long sync;
 	stackWrapper * stackTop, * tmp;
 	ruleSeg * rs;
@@ -922,9 +924,9 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 			}
 			else {
 				// error : top stack terminal do not match token (from lexer)
-				errors = 1;
-				printf("%d\n", nxtT->id);
-				printf("ERROR_5 : The token %s for the lexeme \'%s\' does not match at line %d\n", stackTop->ptr->id->val, nxtT->val, nxtT->lno);	
+				*errors = 1;
+				// printf("%d\n", nxtT->id);
+				printf("%sERROR : %s(parser)%s The token %s for the lexeme \'%s\' does not match at line %d\n", BOLDRED, BOLDMAGENTA, RESET, stackTop->ptr->id->val, nxtT->val, nxtT->lno);	
 				stackTop = stackTop->next;
 				nxtT = getToken();
 				while(nxtT->id == 56)
@@ -938,8 +940,8 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 			if(rl == NULL) {
 
-				errors = 1;
-				printf("ERROR_5 : The non terminal %s does not produce lexeme \'%s\' at line %d\n", topEle->val, nxtT->val, nxtT->lno );
+				*errors = 1;
+				printf("%sERROR : %s(parser)%s The non terminal %s does not produce lexeme \'%s\' at line %d\n", BOLDRED, BOLDMAGENTA, RESET, topEle->val, nxtT->val, nxtT->lno );
 
 				sync = 0;
 				sync = topEle->first | topEle->follow;
@@ -991,11 +993,11 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 	}
 
-	if(errors) {
-		printf("\n\nThere are syntactical errors in the source code.\n");
+	if(*errors) {
+		printf("\n%sThere are syntactical errors in the source code.%s\n\n", BOLDRED, RESET);
 	}
 	else {
-		printf("\n\nInput source code has no syntactical errors.\n");
+		printf("\n%sInput source code has no syntactical errors.%s\n\n", BOLDGREEN, RESET);
 	}
 
 	return root;

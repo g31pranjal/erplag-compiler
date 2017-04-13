@@ -294,14 +294,15 @@ token * retrace(int state, char attr[30], char lexeme[30]) {
 			return createToken(val, attr, lno);
 		else{
 			if(strlen(attr) > 8) {
-				printf("ERROR_1 : Identifier at line %d is longer the prescribed length\n", lno);
+				printf("%sERROR : %s(lexer)%s Identifier at line %d is longer the prescribed length\n", BOLDRED, BOLDCYAN, RESET, lno);
 				return createToken(56, attr, lno);	
 			}
 			return createToken(30, attr, lno);
 		}
 	}
 	else {
-		printf("ERROR_3 : Unknown pattern %s \n", lexeme);
+		printf("%sERROR : %s(lexer)%s Unknown pattern '%s' \n", BOLDRED, BOLDCYAN, RESET, lexeme);
+		// getChar();
 		return createToken(56, attr, lno);
 	}
    
@@ -605,7 +606,7 @@ token * getToken() {
 				}
 			}
 			else {
-				printf("ERROR_2 : Unknown Symbol %c at line %d\n", spot, lno);
+				printf("%sERROR : %s(lexer)%s Unknown Symbol %c at line %d\n", BOLDRED, BOLDCYAN, RESET, spot, lno);
 				return createToken(56, "", lno);
 			}
 		}
