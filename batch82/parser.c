@@ -1005,15 +1005,85 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl) {
 
 
 
-int printParseTree( treeNode * head, FILE * fp)  {
+// int printParseTree( treeNode * head, FILE * fp)  {
+
+// 	int first = 0;
+// 	treeNode * child;
+// 	child = head->childL;
+
+// 	// printf("starting printing on head : %x\n", head->id->id);
+
+// 	if( head->id->id > 100 && child != NULL) {
+
+// 		while(child != NULL) {
+
+// 			printParseTree(child, fp);
+// 			if(first == 0) {
+// 				// printing a non terminal 
+// 				// printf("node : %x\n", head);
+				
+// 				if(head->parent != NULL) {
+// 					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+// 					fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
+// 				}
+					
+// 				else{
+// 					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 				}
+
+// 				first = 1;
+// 			}
+// 			child = child->next;
+// 		}
+
+// 	}
+// 	else if(head->id->id > 100 && child == NULL) {
+// 		printf("non terminal with no children. something fishy\n");
+// 		if(head->parent != NULL) {
+// 			printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+// 			fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
+// 		}
+			
+// 		else{
+// 			printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 			fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 		}
+// 	}
+// 	else if() {
+// 		if(head->tptr != NULL) {
+// 			// with the token 
+// 			if(head->tptr->id == 31 || head->tptr->id == 32 ){
+// 				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+// 				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+// 			}
+// 			else { 
+// 				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+// 				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+// 			}
+// 		}
+// 		else {
+// 			// printf("terminal node : %d\n", head->id);
+// 			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+// 			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+
+// 		}
+// 	}
+
+// }
+
+
+int printParseTree(treeNode * head, FILE * fp)  {
 
 	int first = 0;
 	treeNode * child;
 	child = head->childL;
 
-	// printf("starting printing on head : %x\n", head->id->id);
 
-	if( head->id->id > 100 && child != NULL) {
+	// printf("starting printing on head : %x\n", head);
+
+	if(child != NULL) {
+
 
 		while(child != NULL) {
 
@@ -1023,8 +1093,9 @@ int printParseTree( treeNode * head, FILE * fp)  {
 				// printf("node : %x\n", head);
 				
 				if(head->parent != NULL) {
-					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
-					fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
+					// printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+					printf("%s ( %x ) parent of %s ( %x )\n", head->parent->id->val, head->parent, head->id->val, head);
+					// fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id)->val, head->id->val);	
 				}
 					
 				else{
@@ -1036,37 +1107,24 @@ int printParseTree( treeNode * head, FILE * fp)  {
 			}
 			child = child->next;
 
-
-		}
-	}
-	else if(head->id->id > 100 && child == NULL) {
-		printf("non terminal with no children. something fishy\n");
-		if(head->parent != NULL) {
-			printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
-			fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);	
-		}
-			
-		else{
-			printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
-			fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
 		}
 	}
 	else {
 		if(head->tptr != NULL) {
 			// with the token 
 			if(head->tptr->id == 31 || head->tptr->id == 32 ){
-				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
 			}
 			else { 
-				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+				printf("%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
+				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
 			}
 		}
 		else {
 			// printf("terminal node : %d\n", head->id);
-			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
-			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+			printf("---\t\t---\t\t %s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
+			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
 
 		}
 	}
@@ -1075,7 +1133,3 @@ int printParseTree( treeNode * head, FILE * fp)  {
 
 
 }
-
-
-
-

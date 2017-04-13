@@ -1,33 +1,25 @@
 <program>				:		<moduleDeclarations> <otherModules> <driverModule> <otherModules>
-<moduleDeclarations>	:		{ ID } 
-<otherModules>			:		{ <module> }
+<moduleDeclarations>	:		{ ID }*
+<otherModules>			:		{ <module> }*
 <driverModule>			:		<!-- DRIVERDEF DRIVER PROGRAM DRIVERENDDEF --> <moduleDef>
 <module>				:		ID <input_plist> <output_plist> <moduleDef>
-<input_plist>			:		{ ID <dataType> }  
-<output_plist>			:		{ ID (INTEGER/REAL/BOOLEAN) }
+<input_plist>			:		{ ID <dataType> }*  
+<output_plist>			:		{ ID (INTEGER/REAL/BOOLEAN) }*
 <dataType>				:		(INTEGER/REAL/BOOLEAN)
 <dataType>				:		ARRAY <!-- SQBO --> <range> <!-- SQBC OF --> (INTEGER/REAL/BOOLEAN)
 <moduleDef>				:		<!-- START --> <statements> <!-- END -->
 <statements>			:		{ <ioStmt> / <simpleStmt> / <declareStmt> / <condionalStmt> / <iterativeStmt> }
-
-
-
-
-<ioStmt>				:		GET_VALUE <!-- BO --> ID <whichId> <!-- BC SEMICOL -->
-<ioStmt>				:		PRINT <!-- BO --> <print_val> <!-- BC SEMICOL -->
-<print_val>				:		ID <whichId>
-<print_val>				:		NUM
-<print_val>				:		RNUM
-<print_val>				:		TRUE
-<print_val>				:		FALSE
-
-<whichId>				:		<!-- SQBO --> <index> <!-- SQBC -->
-<!-- <whichId>				:		EMPTY -->
+<ioStmt>				:		GET_VALUE <!-- BO --> ID [<index>] <!-- BC SEMICOL -->
+<ioStmt>				:		PRINT <!-- BO --> (ID[<index>]/NUM/RNUM/TRUE/FALSE) <!-- BC SEMICOL -->
 <index>					:		NUM
 <index>					:		ID
+
+
+
 <simpleStmt>			:		<assignmentStmt>
 <simpleStmt>			:		<moduleReuseStmt>
-<assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> <!-- SEMICOL -->
+
+<assignmentStmt>		:		ID <index> ASSIGNOP <expression> <!-- SEMICOL -->
 <moduleReuseStmt>		:		<optional> <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
 <optional>				:		<!-- SQBO --> <idList> <!-- SQBC --> ASSIGNOP
 <!-- <optional>				:		EMPTY -->
@@ -42,22 +34,19 @@ modified
 
 
 <expression>			:		<arithOrBoolExpr>
+
 <expression>			:		MINUS <!-- BO --> <arithmeticExpr> <!-- BC -->
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
-<arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
-<!-- <arithOrBoolExprRec> 	:		EMPTY -->
+<arithOrBoolExprRec> 	:		(AND/OR) <anyTerm> <arithOrBoolExprRec>
 
 <anyTerm> 				:		<arithmeticExpr> <anyTermRec>
-<anyTermRec> 			:		<relationalOp> <arithmeticExpr> <anyTermRec>
-<!-- <anyTermRec> 			:		EMPTY -->
+<anyTermRec> 			:		(LT/LE/GT/GE/NE/EQ) <arithmeticExpr> <anyTermRec>
 
 <arithmeticExpr>		:		<term> <arithmeticExprRec>
-<arithmeticExprRec>		:		<pm> <term> <arithmeticExprRec>
-<!-- <arithmeticExprRec>		:		EMPTY  -->
+<arithmeticExprRec>		:		(PLUS/MINUS) <term> <arithmeticExprRec>
 
 <term>					:		<factor> <termRec>
-<termRec>				:		<md> <factor> <termRec>
-<!-- <termRec>				:		EMPTY -->
+<termRec>				:		(MUL/DIV) <factor> <termRec>
 
 <factor>				:		<!-- BO --> <arithOrBoolExpr> <!-- BC -->
 <factor>				:		<var>
@@ -65,19 +54,6 @@ modified
 <var>					:		ID <whichId>
 <var>					:		NUM
 <var>					:		RNUM
-
-<pm>					:		PLUS
-<pm>					:		MINUS
-<md>					:		MUL
-<md>					:		DIV
-<logicalOp>				:		AND
-<logicalOp>				:		OR
-<relationalOp>			:		LT
-<relationalOp>			:		LE
-<relationalOp>			:		GT
-<relationalOp>			:		GE
-<relationalOp>			:		EQ
-<relationalOp>			:		NE
 
 <declareStmt>			:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
 
@@ -95,8 +71,4 @@ modified
 <iterativeStmt>			:		FOR <!-- BO --> ID <!-- IN --> <range> <!-- BC START --> <statements> <!-- END -->
 <iterativeStmt>			:		WHILE <!-- BO --> <arithOrBoolExpr> <!-- BC START --> <statements> <!-- END -->
 <range>					:		NUM <!-- RANGEOP --> NUM
-
-
-
-
 

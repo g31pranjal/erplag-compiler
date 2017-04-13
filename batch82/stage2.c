@@ -2,6 +2,7 @@
 #include "lexerDef.h"
 #include "parserDef.h"
 #include "scopeDef.h"
+
 #include "parser.c"
 #include "lexer.c"
 #include "ast.c"
@@ -9,16 +10,9 @@
 
 
 
-
-
-
-
-
-
-
 int main() {
 
-	char * filename = "testcases/testcase5.txt";
+	char * filename = "testcases/testcase3.txt";
 	char * writefn  = "out.put";
 
 	grammar * gr = NULL;
@@ -44,8 +38,7 @@ int main() {
 	// printParseTree(head, fp);
 
 	constructAST(head);
-
-	// printAST(head);
+	printParseTree(head, fp);
 
 	sHead = initScopeStructure(head);
 

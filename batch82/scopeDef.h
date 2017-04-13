@@ -1,12 +1,10 @@
 
-
-typedef struct se symbolEntry;
-typedef struct sy symbolScope;
-
-
 #ifndef _scopeStruct
 
 #define _scopeStruct
+
+typedef struct se symbolEntry;
+typedef struct sy symbolScope;
 
 struct se {
 	char identifier[25];

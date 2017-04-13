@@ -78,21 +78,30 @@ modified
 
 
 
-<ioStmt>				:		GET_VALUE <!-- BO --> ID <whichId> <!-- BC SEMICOL -->
-<ioStmt>				:		PRINT <!-- BO --> <print_val> <!-- BC SEMICOL -->
-<print_val>				:		ID <whichId>
+<!-- <ioStmt>				:		GET_VALUE BO ID <whichId> BC SEMICOL -->
+modified
+<ioStmt>				:		GET_VALUE <!-- BO --> ID[<index>] <!-- BC SEMICOL -->
+
+<ioStmt>				:		PRINT <!-- BO --> (ID[<index>]/NUM/RNUM/TRUE/FALSE) <!-- BC SEMICOL -->
+
+<!-- <print_val>				:		ID <whichId> -->
+<!-- modified
+<print_val>				:		ID <index>
 <print_val>				:		NUM
 <print_val>				:		RNUM
 <print_val>				:		TRUE
-<print_val>				:		FALSE
+<print_val>				:		FALSE -->
 
-<whichId>				:		<!-- SQBO --> <index> <!-- SQBC -->
+<!-- <whichId>				:		SQBO <index> SQBC -->
 <!-- <whichId>				:		EMPTY -->
 <index>					:		NUM
 <index>					:		ID
 <simpleStmt>			:		<assignmentStmt>
 <simpleStmt>			:		<moduleReuseStmt>
-<assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> <!-- SEMICOL -->
+<!-- <assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> SEMICOL -->
+modified
+<assignmentStmt>		:		ID <index> ASSIGNOP <expression> <!-- SEMICOL -->
+
 <moduleReuseStmt>		:		<optional> <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
 <optional>				:		<!-- SQBO --> <idList> <!-- SQBC --> ASSIGNOP
 <!-- <optional>				:		EMPTY -->
@@ -110,29 +119,31 @@ modified
 <expression>			:		MINUS <!-- BO --> <arithmeticExpr> <!-- BC -->
 
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
-<arithOrBoolExprRec> 	:		<logicalOp> <anyTerm> <arithOrBoolExprRec>
+<arithOrBoolExprRec> 	:		(AND / OR) <anyTerm> <arithOrBoolExprRec>
 <!-- <arithOrBoolExprRec> 	:		EMPTY -->
 
 <anyTerm> 				:		<arithmeticExpr> <anyTermRec>
-<anyTermRec> 			:		<relationalOp> <arithmeticExpr> <anyTermRec>
+<anyTermRec> 			:		(LT / LE / GT / GE / NE / EQ) <arithmeticExpr> <anyTermRec>
 <!-- <anyTermRec> 			:		EMPTY -->
 
 <arithmeticExpr>		:		<term> <arithmeticExprRec>
-<arithmeticExprRec>		:		<pm> <term> <arithmeticExprRec>
+<arithmeticExprRec>		:		(PLUS / MINUS) <term> <arithmeticExprRec>
 <!-- <arithmeticExprRec>		:		EMPTY  -->
 
 <term>					:		<factor> <termRec>
-<termRec>				:		<md> <factor> <termRec>
+<termRec>				:		(MUL / DIV) <factor> <termRec>
 <!-- <termRec>				:		EMPTY -->
 
 <factor>				:		<!-- BO --> <arithOrBoolExpr> <!-- BC -->
 <factor>				:		<var>
 
-<var>					:		ID <whichId>
+<!-- <var>					:		ID <whichId> -->
+modified
+<var>					:		ID <index>
 <var>					:		NUM
 <var>					:		RNUM
 
-<pm>					:		PLUS
+<!-- <pm>					:		PLUS
 <pm>					:		MINUS
 <md>					:		MUL
 <md>					:		DIV
@@ -143,7 +154,7 @@ modified
 <relationalOp>			:		GT
 <relationalOp>			:		GE
 <relationalOp>			:		EQ
-<relationalOp>			:		NE
+<relationalOp>			:		NE -->
 
 <declareStmt>			:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
 

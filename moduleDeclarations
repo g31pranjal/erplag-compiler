@@ -8,7 +8,11 @@ idListRec
 type
 ret
 statement
-
+pm
+md
+logicalOp
+relationalOp
+whichId
 
 ----- NOT BEING USED
 
@@ -20,3 +24,8 @@ caseStmtRec
 type 
 ret 
 statement
+pm
+md
+logicalOp
+relationalOp
+whichId

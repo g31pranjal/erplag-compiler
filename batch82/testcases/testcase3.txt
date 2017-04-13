@@ -7,9 +7,10 @@ declare module minus;
 <<module square>>
 takes input [x:integer, y:real, z:boolean, alpha : array [0..5] of integer];
 start
-	declare a : array [0..10] of integer;
-	value:= x AND y AND z;
-	value:= x-x;
+	declare q,w,e,r,t,y,u,i,o,p : integer;
+	
+	value:= q+w < e-r AND t*y >= u*(4-6)/p;
+	value:= -(24);
 end
 
 
