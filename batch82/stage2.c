@@ -13,7 +13,7 @@
 
 int main() {
 
-	char * filename = "testcases/testcase3.txt";
+	char * filename = "testcases/testcase4.txt";
 	char * writefn  = "out.put";
 
 	grammar * gr = NULL;
@@ -41,7 +41,6 @@ int main() {
 	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
 		// printScopeStructure(sHead);
-		
 		checkSemantics(head, &errors);
 	}
 
@@ -56,7 +55,7 @@ int main() {
 
 
 
-	// FILE * fp = fopen(writefn, "w+");
+	FILE * fp = fopen(writefn, "w+");
 	// printParseTree(head, fp);
 
 	// printParseTree(head, fp);

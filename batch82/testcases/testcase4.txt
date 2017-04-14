@@ -6,6 +6,7 @@ returns  [sum:real];
 start
 	declare index:integer;
 	declare t:boolean;
+	declare r : real;
 	sum:=0.0;
 	for(index in  1..15)
 	start
@@ -19,6 +20,9 @@ start
 				    print(index);
 				    **prints the values of sum and index  15-n times**
 				    break;
+			default :
+				;
+			break;
 		end
 		** no need to increment the value of index as it will be taken care by the semantic rules associated with for construct, but an increment statement does not make its syntax incorrect**
 	end

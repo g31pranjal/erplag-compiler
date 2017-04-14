@@ -1,10 +1,9 @@
 #include "scopeDef.h"
 
 
-checkArrayCases(treeNode * idref, int * errors) {
+int checkArrayCases(treeNode * idref, int * errors) {
 
-	printf("checking the array subscript\n");
-
+	
 	symbolEntry * se = idref->se;
 	treeNode * ind;
 	int iVal;
@@ -126,6 +125,45 @@ int expressionCheckerInit(treeNode * exp, int * errors) {
 	// printf("exp type : %s\n", exp->type);
 }
 
+int switchSemantics(treeNode * swt, int * errors) {
+	
+	treeNode * id, * cr, *df;
+	id = swt->childL;
+	cr = swt->childL->next->childL;
+	df = swt->childL->next->next;
+
+	if( strcmp(id->se->type, "INTEGER") != 0 && strcmp(id->se->type, "BOOLEAN") != 0 ) {
+		printf("%sERROR : %s(semantics)%s The identifier '%s' in switch statement at line %d should be of type INTEGER or BOOLEAN.\n", BOLDRED, BOLDBLUE, RESET, id->id->val, id->tptr->lno);
+		*errors = 1;
+	}
+	else {
+		if( strcmp(id->se->type, "INTEGER") == 0 && df == NULL) {
+			printf("%sERROR : %s(semantics)%s The INTEGER identifier '%s' in switch statement at line %d must be followed by the DEFAULT statement.\n", BOLDRED, BOLDBLUE, RESET, id->id->val, id->tptr->lno);
+			*errors = 1;
+		}
+		else if( strcmp(id->se->type, "BOOLEAN") == 0 && df != NULL) {
+			printf("%sERROR : %s(semantics)%s The BOOLEAN identifier '%s' in switch statement at line %d must not be followed by the DEFAULT statement.\n", BOLDRED, BOLDBLUE, RESET, id->id->val, id->tptr->lno);
+			*errors = 1;
+		}
+
+		while(cr != NULL) {
+			if( strcmp(cr->id->val,"<value>") == 0 ) {
+				if( strcmp(id->se->type, "INTEGER") == 0 && strcmp(cr->childL->id->val, "NUM") != 0 ) {
+					printf("%sERROR : %s(semantics)%s Switch statement with INTEGER typed identifier can have only INTEGER values in case statements. Found otherwise at line %d\n", BOLDRED, BOLDBLUE, RESET, cr->childL->tptr->lno);
+					*errors = 1;
+				}
+				else if( strcmp(id->se->type, "BOOLEAN") == 0 &&  strcmp(cr->childL->id->val, "TRUE") != 0 && strcmp(cr->childL->id->val, "FALSE") != 0  ) {
+					printf("%sERROR : %s(semantics)%s Switch statement with BOOLEAN typed identifier can have only TRUE / FALSE values in case statements. Found otherwise at line %d\n", BOLDRED, BOLDBLUE, RESET, cr->childL->tptr->lno);
+					*errors = 1;
+				}
+			}
+			cr = cr->next;
+		}
+
+	}
+
+}
+
 
 int checkSemantics(treeNode * head, int * errors) {
 
@@ -136,17 +174,18 @@ int checkSemantics(treeNode * head, int * errors) {
 
 		if(child->childL == NULL) {
 			// terminal
-
 		}
 		else {
+			checkSemantics(child, errors);
 			
 			// checks the expression subtree
 			if( strcmp(child->id->val, "<expression>") == 0 ) {
 				expressionCheckerInit(child, errors);
 			}
-			else {
-				checkSemantics(child, errors);
+			else if( strcmp(child->id->val, "<condionalStmt>") == 0 ) {
+				switchSemantics(child, errors);
 			}
+
 		}
 		child = child->next;		
 	} 

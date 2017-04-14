@@ -55,20 +55,18 @@ modified
 <var>					:		NUM
 <var>					:		RNUM
 
-<declareStmt>			:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
+<declareStmt>			:		<idList> <dataType> 
 
-<condionalStmt>			:		<!-- SWITCH BO --> <expression> <!-- BC START --> <caseStmts> <default><!--  END -->
-<caseStmts>				:		<!-- CASE --> <value> <!-- COLON --> <statements> <!-- BREAK SEMICOL --> <caseStmtsRec>
-<caseStmtsRec>			:		<!-- CASE --> <value> <!-- COLON --> <statements> <!-- BREAK SEMICOL --> <caseStmtsRec>
+<condionalStmt>			:		<expression><caseStmts> [ <default> ]
+<caseStmts>				:		{ <value> <statements> } 
+<default>				:		<statements>
 
-<!-- <caseStmtsRec>			:		EMPTY -->
 <value>					:		NUM
 <value>					:		TRUE
 <value>					:		FALSE
 
-<default>				:		<!-- DEFAULT COLON --> <statements> <!-- BREAK SEMICOL -->
-<!-- <default>				:		EMPTY -->
 <iterativeStmt>			:		FOR <!-- BO --> ID <!-- IN --> <range> <!-- BC START --> <statements> <!-- END -->
 <iterativeStmt>			:		WHILE <!-- BO --> <arithOrBoolExpr> <!-- BC START --> <statements> <!-- END -->
+
 <range>					:		NUM <!-- RANGEOP --> NUM
 

@@ -66,7 +66,6 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 			}
 			else {
 				printf("%sERROR : %s(scope resolution)%s The identifier '%s' at line %d cannot be declared multiple times in the same scope.\n", BOLDRED, BOLDYELLOW, RESET, identifier, line);
-				*errors = 0; /* non halting */
 				return NULL;
 			}
 		}
