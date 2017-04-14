@@ -82,15 +82,7 @@ modified
 modified
 <ioStmt>				:		GET_VALUE <!-- BO --> ID[<index>] <!-- BC SEMICOL -->
 
-<ioStmt>				:		PRINT <!-- BO --> (ID[<index>]/NUM/RNUM/TRUE/FALSE) <!-- BC SEMICOL -->
-
-<!-- <print_val>				:		ID <whichId> -->
-<!-- modified
-<print_val>				:		ID <index>
-<print_val>				:		NUM
-<print_val>				:		RNUM
-<print_val>				:		TRUE
-<print_val>				:		FALSE -->
+<ioStmt>				:		PRINT <!-- BO --> <var> <!-- BC SEMICOL -->
 
 <!-- <whichId>				:		SQBO <index> SQBC -->
 <!-- <whichId>				:		EMPTY -->

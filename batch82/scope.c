@@ -92,7 +92,6 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 		scope->seHead = newEntry;
 
 	}
-
 	return newEntry;
 }
 
@@ -156,100 +155,50 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 				if(child->id->id == 30) {
 				
-					// kinds of ids to be recorded  
-
-					// 1. declare statement variables (entry).
-					// 2. input_plist vairables (entry).
-					// 3. output_plist variables (entry).
-					// 4. module definition names (entry).
-					// 5. module declaration (entry)
-
-					// printf("terminal, ID %s \n", child->tptr->val);
-
-					// case 1 
+					// case 1 : declare statement variables 
 					if( strcmp(child->parent->id->val, "<idList>") == 0 && strcmp(child->parent->parent->id->val, "<declareStmt>") == 0 ) {
 						dT = child->parent->next;
 						if(dT->childL == dT->childR) {
 							// simple type
-							// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 0, -1, -1, child->tptr->lno); 
-							
-							se = addSymbolEntry(child->tptr->val, 1, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope, errors); 
-						
+							se = addSymbolEntry(child->tptr->val, 1, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope, errors);
 						}
 						else {
 							// array type
-							// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno); 
-
 							se = addSymbolEntry(child->tptr->val, 1, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope, errors); 
-						
 						}
 					}
 
-					// case 2 
+					// case 2 : input list variables
 					else if( strcmp(child->parent->id->val, "<input_plist>") == 0) {
 						dT = child->next;
 						if(dT->childL == dT->childR) {
 							// simple type
-							// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 0, -1, -1, child->tptr->lno); 
-							
-							se = addSymbolEntry(child->tptr->val, 3, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope, errors); 
-						
+							se = addSymbolEntry(child->tptr->val, 3, dT->childL->id->val, 0, -1, -1, child->tptr->lno, scope, errors);
 						}
 						else {
 							// array type
-							// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, dT->childL->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno); 
-
 							se = addSymbolEntry(child->tptr->val, 3, dT->childR->id->val, 1, atoi(dT->childL->next->childL->tptr->val), atoi(dT->childL->next->childR->tptr->val), child->tptr->lno, scope, errors); 
 						}
 					}
 
-					// case 3 
+					// case 3 : output list 
 					else if( strcmp(child->parent->id->val, "<output_plist>") == 0 ) {
-						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, child->next->id->val, 0, -1, -1, child->tptr->lno); 
-						
 						se = addSymbolEntry(child->tptr->val, 4, child->next->id->val, 0, -1, -1, child->tptr->lno, scope, errors); 	
 					}
 					
-					// case 4 
+					// case 4 : id of module definition
 					else if( strcmp(child->parent->id->val, "<module>") == 0 ) {
-						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
-						
 						se = addSymbolEntry(child->tptr->val, 2, "", 0, -1, -1, child->tptr->lno, scope->parent, errors); 
 					}
 
-					// case 5
+					// case 5 : id of module declaration
 					else if( strcmp(child->parent->id->val, "<moduleDeclarations>") == 0 ) {
-						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
-						
 						se = addSymbolEntry(child->tptr->val, 5, "", 0, -1, -1, child->tptr->lno, scope, errors); 
 					}
 
 					else {
 						// printf("looking up %s...\n", child->tptr->val);
 						se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno, errors);
-						if(se != NULL && se->isArray == 1) {
-							if(child->next != NULL && strcmp(child->next->id->val, "<index>") == 0 ) {
-								ind = child->next;
-								if( strcmp(ind->childL->id->val, "NUM") == 0 ) {
-									// check index bounds
-									iVal = atoi(ind->childL->tptr->val);
-									if( iVal < se->startInd || iVal > se->endInd ) {
-										printf("%sERROR : %s(scope resolution)%s Array index for identifier '%s' at line %d is out of bounds.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
-										*errors = 1;
-									}
-								}
-								else {
-									if( strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
-										printf("%sERROR : %s(scope resolution)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
-										*errors = 1;
-									}
-								}
-							}
-							else {
-								printf("%sERROR : %s(scope resolution)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
-								*errors = 1;
-							}
-						}
 					}
 					if(se != NULL) {
 						child->se = se;
@@ -264,20 +213,15 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
 					newScope = stackScope(scope, child->id->val);
-	 				// printf("adding new scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
 	 				iterOverScope(child, newScope, errors);
-	 				// printf("exiting scope for %s, parent : %s\n", child->id->val, child->parent->id->val);
-
 				}
 				else {
 					iterOverScope(child, scope, errors);
 				}
-
 			}
 
 			child = child->next;
 			
 		}
 	}
-	
 }

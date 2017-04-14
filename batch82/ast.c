@@ -145,9 +145,8 @@ int constructAST(treeNode * head) {
 						liftUpNode(child);
 
 					// whichId, print_val compression
-					else if(strcmp(child->id->val, "<whichId>") == 0 || strcmp(child->id->val, "<print_val>") == 0)
+					else if(strcmp(child->id->val, "<whichId>") == 0 )
 						liftUpNode(child);
-
 
 					// <arithOrBoolExprRec> compression
 					else if( child->childL != NULL && (strcmp(child->childL->id->val, "AND") == 0 || strcmp(child->childL->id->val, "OR") == 0 ) && (strcmp(child->parent->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->parent->id->val, "<arithOrBoolExprRec>") == 0 )  )  {

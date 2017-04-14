@@ -1,13 +1,53 @@
+#include "scopeDef.h"
 
 
-char * expressionCheckerRec(treeNode * nd, int * errors) {
+checkArrayCases(treeNode * idref, int * errors) {
+
+	printf("checking the array subscript\n");
+
+	symbolEntry * se = idref->se;
+	treeNode * ind;
+	int iVal;
+
+	if(se != NULL && se->isArray == 1) {
+		if(idref->next != NULL && strcmp(idref->next->id->val, "<index>") == 0 ) {
+			ind = idref->next;
+			if( strcmp(ind->childL->id->val, "NUM") == 0 ) {
+				// check index bounds
+				iVal = atoi(ind->childL->tptr->val);
+				if( iVal < se->startInd || iVal > se->endInd ) {
+					printf("%sERROR : %s(scope resolution)%s Array index for identifier '%s' at line %d is out of bounds.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+					*errors = 1;
+				}
+			}
+			else {
+				if( strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
+					printf("%sERROR : %s(scope resolution)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+					*errors = 1;
+				}
+				else if(ind->childL->se->isArray == 1)
+					checkArrayCases(ind->childL, errors);
+			}
+		}
+		else {
+			printf("%sERROR : %s(scope resolution)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+			*errors = 1;
+		}
+	}
+}
+
+
+
+int expressionCheckerRec(treeNode * nd, int * errors) {
 
 	char * l, r;
 
 	if( strcmp(nd->id->val, "AND") == 0 || strcmp(nd->id->val, "OR") == 0 ) {
+		
+		expressionCheckerRec(nd->childL, errors);
+		expressionCheckerRec(nd->childR, errors);
+		
 		// BOOLEAN <op> BOOLEAN = BOOLEAN
-		l = expressionCheckerRec(nd->childL, errors);
-		r = expressionCheckerRec(nd->childR, errors);
 		if( strcmp(nd->childL->type, "BOOLEAN") == 0 && strcmp(nd->childR->type, "BOOLEAN") == 0 ) {
 			strcpy(nd->type, "BOOLEAN");
 		}
@@ -18,13 +58,15 @@ char * expressionCheckerRec(treeNode * nd, int * errors) {
 		}
 	}
 	else if( strcmp(nd->id->val, "LE") == 0 || strcmp(nd->id->val, "LT") == 0 ||  strcmp(nd->id->val, "GE") == 0 || strcmp(nd->id->val, "GT") == 0 ||  strcmp(nd->id->val, "NE") == 0 || strcmp(nd->id->val, "EQ") == 0  ) {
+		
+		expressionCheckerRec(nd->childL, errors);
+		expressionCheckerRec(nd->childR, errors);
+		
 		// INTEGER <op> INTEGER = BOOLEAN
-		// REAL <op> REAL = BOOLEAN
-		l = expressionCheckerRec(nd->childL, errors);
-		r = expressionCheckerRec(nd->childR, errors);
 		if( strcmp(nd->childL->type, "INTEGER") == 0 && strcmp(nd->childR->type, "INTEGER") == 0 ) {
 			strcpy(nd->type, "BOOLEAN");
 		}
+		// REAL <op> REAL = BOOLEAN
 		else if( strcmp(nd->childL->type, "REAL") == 0 && strcmp(nd->childR->type, "REAL") == 0 ) {
 			strcpy(nd->type, "BOOLEAN");
 		}
@@ -35,13 +77,14 @@ char * expressionCheckerRec(treeNode * nd, int * errors) {
 		}
 	}
 	else if( strcmp(nd->id->val, "PLUS") == 0 || strcmp(nd->id->val, "MINUS") == 0 ||  strcmp(nd->id->val, "MUL") == 0 || strcmp(nd->id->val, "DIV") == 0  ) {
+		expressionCheckerRec(nd->childL, errors);
+		expressionCheckerRec(nd->childR, errors);
+		
 		// INTEGER <op> INTEGER = INTEGER
-		// REAL <op> REAL = REAL
-		l = expressionCheckerRec(nd->childL, errors);
-		r = expressionCheckerRec(nd->childR, errors);
 		if( strcmp(nd->childL->type, "INTEGER") == 0 && strcmp(nd->childR->type, "INTEGER") == 0 ) {
 			strcpy(nd->type, "INTEGER");
 		}
+		// REAL <op> REAL = REAL
 		else if( strcmp(nd->childL->type, "REAL") == 0 && strcmp(nd->childR->type, "REAL") == 0 ) {
 			strcpy(nd->type, "REAL");
 		}
@@ -56,8 +99,12 @@ char * expressionCheckerRec(treeNode * nd, int * errors) {
 			strcpy(nd->type, "INTEGER");
 		else if( strcmp(nd->childL->id->val,"RNUM") == 0 )
 			strcpy(nd->type, "REAL");
-		else if( strcmp(nd->childL->id->val,"ID") == 0 ){
-			strcpy(nd->type, nd->childL->type);		
+		else if( strcmp(nd->childL->id->val,"TRUE") == 0 || strcmp(nd->childL->id->val,"FALSE") == 0 )
+			strcpy(nd->type, "BOOLEAN");
+		else if( strcmp(nd->childL->id->val,"ID") == 0 ) {
+			if( nd->childL->se->isArray == 1 )
+				checkArrayCases(nd->childL, errors);
+			strcpy(nd->type, nd->childL->type);
 		}
 
 	}
@@ -92,7 +139,6 @@ int checkSemantics(treeNode * head, int * errors) {
 
 		}
 		else {
-			// non-terminal 
 			
 			// checks the expression subtree
 			if( strcmp(child->id->val, "<expression>") == 0 ) {
@@ -101,15 +147,7 @@ int checkSemantics(treeNode * head, int * errors) {
 			else {
 				checkSemantics(child, errors);
 			}
-
-
-
 		}
-
-
-
-		child = child->next;
-		
+		child = child->next;		
 	} 
-
 }

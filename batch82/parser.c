@@ -903,6 +903,7 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, in
 		nxtT = getToken();
 
 	while(stackTop != NULL) {
+		// printf("%s\n", nxtT->val);
 		// printStackWrapperSeq(stackTop);
 		// printf("\n\n");
 
@@ -913,7 +914,6 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, in
 		} 
 		// terminal
 		else if(topEle->id >= 0 && topEle->id < 100) {
-
 			if(topEle->id == nxtT->id) {
 				stackTop->ptr->tptr = nxtT;
 				// free the stack wrapper here

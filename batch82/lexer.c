@@ -315,9 +315,9 @@ token * getToken() {
 
 	int state = 0;
 
-	char attr[30], spot, lexeme[30];
+	char attr[30], spot, lexeme[200];
 	memset(attr, '\0', 30);
-	memset(lexeme, '\0', 30);
+	memset(lexeme, 0, 30);
 	int atptr = 0;
 	int lexemeptr = 0;
 	int commented = 0, cmark = 0;
@@ -327,7 +327,7 @@ token * getToken() {
 		spot = getChar();
 
 		// printf("state : %d\n", state);
-		// printf("spot : %d\n", spot);
+		// printf("spot : %d, %c\n", spot, spot);
 
 		if(spot == 0) {
 			if(state == 0) {
@@ -356,6 +356,7 @@ token * getToken() {
 		}
 		else if(!commented) {
 			lexeme[lexemeptr++] = spot;
+			// printf("lexeme : %s|\n", lexeme);
 			if(spot == 10 || spot == 9 || spot == 32 || spot == '\r') {
 				if(state == 0){
 					if(spot == 10){
@@ -366,6 +367,7 @@ token * getToken() {
 				else {
 					return retrace(state, attr, lexeme);
 				}
+				lexemeptr--;
 			}
 			else if(spot == '+') {
 				if(state == 0){

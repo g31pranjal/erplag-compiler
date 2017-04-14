@@ -35,22 +35,18 @@ int main() {
 	int errors;
 	if(head == NULL) {
 		head = parseInputSourceCode(gr, filename, tableHead, &errors);
-	}
-
-	if(!errors) 
 		constructAST(head);
-	else
-		printf("Errors exist in formation of parse tree. Cannot proceed\n");
+	}
 
 	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
-		printScopeStructure(sHead);
+		// printScopeStructure(sHead);
 		
 		checkSemantics(head, &errors);
 	}
 
 
-	printf("error reporting : %d\n", errors);
+	// printf("error reporting : %d\n", errors);
 
 
 
@@ -60,7 +56,7 @@ int main() {
 
 
 
-	FILE * fp = fopen(writefn, "w+");
+	// FILE * fp = fopen(writefn, "w+");
 	// printParseTree(head, fp);
 
 	// printParseTree(head, fp);

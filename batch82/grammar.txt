@@ -29,12 +29,7 @@
 <statement>				:		<iterativeStmt>
 <statement>				:		SEMICOL
 <ioStmt>				:		GET_VALUE BO ID <whichId> BC SEMICOL
-<ioStmt>				:		PRINT BO <print_val> BC SEMICOL
-<print_val>				:		ID <whichId>
-<print_val>				:		NUM
-<print_val>				:		RNUM
-<print_val>				:		TRUE
-<print_val>				:		FALSE
+<ioStmt>				:		PRINT BO <var> BC SEMICOL
 <whichId>				:		SQBO <index> SQBC
 <whichId>				:		EMPTY
 <index>					:		NUM
@@ -67,6 +62,8 @@
 <var>					:		ID <whichId>
 <var>					:		NUM
 <var>					:		RNUM
+<var>					:		TRUE
+<var>					:		FALSE
 <pm>					:		PLUS
 <pm>					:		MINUS
 <md>					:		MUL
