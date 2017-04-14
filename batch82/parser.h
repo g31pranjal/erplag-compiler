@@ -17,6 +17,6 @@ extern firstAndFollowSets * computeFirstAndFollowSets(grammar * gr);
 
 extern parseList * createParseTable(grammar * gr, firstAndFollowSets * ff);
 
-extern treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl);
+extern treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, int * errors);
 
 extern int printParseTree(grammar * gr, treeNode * head, FILE * fp);

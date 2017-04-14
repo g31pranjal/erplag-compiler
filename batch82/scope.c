@@ -66,7 +66,7 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 			}
 			else {
 				printf("%sERROR : %s(scope resolution)%s The identifier '%s' at line %d cannot be declared multiple times in the same scope.\n", BOLDRED, BOLDYELLOW, RESET, identifier, line);
-				*errors = 1;
+				*errors = 0; /* non halting */
 				return NULL;
 			}
 		}
@@ -142,7 +142,8 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 	symbolScope * newScope;
 	symbolEntry * se;
-	treeNode * child, * dT;
+	treeNode * child, * dT, * ind;
+	int iVal;
 
 	head->scope = scope;
 
@@ -167,7 +168,6 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 					// case 1 
 					if( strcmp(child->parent->id->val, "<idList>") == 0 && strcmp(child->parent->parent->id->val, "<declareStmt>") == 0 ) {
-						// printf("c1 entry into scope for %s\n", child->tptr->val);
 						dT = child->parent->next;
 						if(dT->childL == dT->childR) {
 							// simple type
@@ -187,7 +187,6 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 					// case 2 
 					else if( strcmp(child->parent->id->val, "<input_plist>") == 0) {
-						// printf("c2 entry into scope for %s\n", child->tptr->val);
 						dT = child->next;
 						if(dT->childL == dT->childR) {
 							// simple type
@@ -206,7 +205,6 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 					// case 3 
 					else if( strcmp(child->parent->id->val, "<output_plist>") == 0 ) {
-						// printf("c3 entry into scope for %s\n", child->tptr->val);
 						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, child->next->id->val, 0, -1, -1, child->tptr->lno); 
 						
 						se = addSymbolEntry(child->tptr->val, 4, child->next->id->val, 0, -1, -1, child->tptr->lno, scope, errors); 	
@@ -214,7 +212,6 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 					
 					// case 4 
 					else if( strcmp(child->parent->id->val, "<module>") == 0 ) {
-						// printf("c4 entry into scope for %s\n", child->tptr->val);
 						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
 						
 						se = addSymbolEntry(child->tptr->val, 2, "", 0, -1, -1, child->tptr->lno, scope->parent, errors); 
@@ -222,22 +219,42 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 					// case 5
 					else if( strcmp(child->parent->id->val, "<moduleDeclarations>") == 0 ) {
-						// printf("c5 entry into scope for %s\n", child->tptr->val);
 						// printf("identifier %s, type %s, isArray : %d, s : %d, e : %d, l : %d\n", child->tptr->val, "", 0, -1, -1, child->tptr->lno); 
 						
 						se = addSymbolEntry(child->tptr->val, 5, "", 0, -1, -1, child->tptr->lno, scope, errors); 
 					}
 
 					else {
-						// printf("looking up ...\n");
+						// printf("looking up %s...\n", child->tptr->val);
 						se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno, errors);
+						if(se != NULL && se->isArray == 1) {
+							if(child->next != NULL && strcmp(child->next->id->val, "<index>") == 0 ) {
+								ind = child->next;
+								if( strcmp(ind->childL->id->val, "NUM") == 0 ) {
+									// check index bounds
+									iVal = atoi(ind->childL->tptr->val);
+									if( iVal < se->startInd || iVal > se->endInd ) {
+										printf("%sERROR : %s(scope resolution)%s Array index for identifier '%s' at line %d is out of bounds.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
+										*errors = 1;
+									}
+								}
+								else {
+									if( strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
+										printf("%sERROR : %s(scope resolution)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
+										*errors = 1;
+									}
+								}
+							}
+							else {
+								printf("%sERROR : %s(scope resolution)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, child->tptr->val, child->tptr->lno);
+								*errors = 1;
+							}
+						}
 					}
-					
-					if(se == NULL) {
-						// ERRORS EXIST RELATED TO THE SYMBOL TABLE
+					if(se != NULL) {
+						child->se = se;
+						strcpy(child->type, se->type);
 					}
-
-					child->se = se;
 				}
 			}
 

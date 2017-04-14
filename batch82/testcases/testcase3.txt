@@ -7,16 +7,17 @@ declare module minus;
 <<module square>>
 takes input [x:integer, z:boolean, alpha : array [0..5] of integer];
 start
-	declare q,y,y,i,o,p,value : integer;
-	declare w,e,r,t : real;
-	value:= q+w < e-r AND t*y < u*(4-6)/p;
-	value:= -(24);
+	declare q : array [0..4] of real;
+	declare w, e,r,t,y,u,p : real;
+	declare value,i,o : integer;
+	value:= q[2]+w < e-r AND t*y < u*(4.0-6.2)/p;
+	value:= -(e + t);
 end
 
 
 
 <<module diff>>
-takes input [x:integer];
+takes input [x : integer];
 returns [value:integer];
 start
 	value:= x*x;

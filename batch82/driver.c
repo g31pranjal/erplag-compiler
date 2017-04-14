@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
 		parseList * tableHead = NULL;
 		treeNode * head = NULL;
 
-		int option;
+		int option, errors;
 
 		do {
 
@@ -87,7 +87,7 @@ int main(int argc, char ** argv) {
 						tableHead = createParseTable(gr, ff);
 					}
 					if(head == NULL) {
-						head = parseInputSourceCode(gr, argv[1], tableHead);
+						head = parseInputSourceCode(gr, argv[1], tableHead, &errors);
 					}
 					else {
 						printf("Parse tree is already created.\n");
@@ -105,7 +105,7 @@ int main(int argc, char ** argv) {
 						tableHead = createParseTable(gr, ff);
 					}
 					if(head == NULL) {
-						head = parseInputSourceCode(gr, argv[1], tableHead);
+						head = parseInputSourceCode(gr, argv[1], tableHead, &errors);
 					}
 
 					FILE * fp = fopen(argv[2], "w+");

@@ -42,9 +42,14 @@ int main() {
 	else
 		printf("Errors exist in formation of parse tree. Cannot proceed\n");
 
-	if(!errors) 
+	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
-	
+		printScopeStructure(sHead);
+		
+		checkSemantics(head, &errors);
+	}
+
+
 	printf("error reporting : %d\n", errors);
 
 
@@ -62,7 +67,6 @@ int main() {
 
 	// errors can arise in here 
 
-	// printScopeStructure(sHead);
 	
 	// checkSemantics(head);
 

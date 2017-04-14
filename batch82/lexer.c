@@ -301,7 +301,7 @@ token * retrace(int state, char attr[30], char lexeme[30]) {
 		}
 	}
 	else {
-		printf("%sERROR : %s(lexer)%s Unknown pattern '%s' \n", BOLDRED, BOLDCYAN, RESET, lexeme);
+		printf("%sERROR : %s(lexer)%s Unknown pattern '%s' at line %d\n", BOLDRED, BOLDCYAN, RESET, lexeme, lno);
 		// getChar();
 		return createToken(56, attr, lno);
 	}
