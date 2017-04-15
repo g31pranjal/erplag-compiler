@@ -62,14 +62,14 @@ int constructAST(treeNode * head) {
 
 	treeNode * child , * childchild;
 
-	int keep[] = {2/*PRINT*/, 10/*AND*/, 12/*OR*/, 13/*FOR*/, 14/*INTEGER*/, 15/*REAL*/, 16/*BOOLEAN*/, 17/*ARRAY*/, 20/*GET_VALUE*/, 23/*TRUE*/, 24/*FALSE*/, 28/*WHILE*/, 30/*ID*/, 31/*NUM*/, 32/*RNUM*/, 34/*PLUS*/, 35/*MINUS*/, 36/*MUL*/, 37/*DIV*/, 38/*LT*/, 39/*LE*/, 40/*GT*/, 41/*GE*/, 42/*NE*/, 43/*EQ*/, 50/*ASSIGNOP*/};
+	int keep[] = {2/*PRINT*/, 10/*AND*/, 12/*OR*/, 13/*FOR*/, 14/*INTEGER*/, 15/*REAL*/, 16/*BOOLEAN*/, 17/*ARRAY*/, 20/*GET_VALUE*/, 23/*TRUE*/, 24/*FALSE*/, 28/*WHILE*/, 30/*ID*/, 31/*NUM*/, 32/*RNUM*/, 34/*PLUS*/, 35/*MINUS*/, 36/*MUL*/, 37/*DIV*/, 38/*LT*/, 39/*LE*/, 40/*GT*/, 41/*GE*/, 42/*NE*/, 43/*EQ*/};
 
 	int i, toRemove, arrL = sizeof(keep)/sizeof(int);
 
 	if(head->childL != NULL) {
 		child = head->childL;
 		while(child != NULL) {
-			// printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
+			printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
 
 			if(child->childL == NULL) {
 				// terminal
@@ -93,9 +93,12 @@ int constructAST(treeNode * head) {
 				constructAST(child);
 				if(child->childL == NULL && child->childR == NULL) {
 					// printf("removing %s\n", child->id->val);
-					removeTreeNode(head, child);	
+					removeTreeNode(head, child);
 				}
 				else {
+
+					// printf("in for child %s\n", child->id->val);
+					// printf("in for child %s\n", child->childL->id->val);
 
 					// moduleDeclarations recursion compressing
 					if(strcmp(child->id->val, "<moduleDeclarations>") == 0) {
@@ -136,6 +139,10 @@ int constructAST(treeNode * head) {
 					else if(strcmp(child->id->val, "<ret>") == 0)
 						liftUpNode(child);
 
+					// optional compression
+					else if(strcmp(child->id->val, "<optional>") == 0)
+						liftUpNode(child);
+
 					// statement compression
 					else if(strcmp(child->id->val, "<statement>") == 0)
 						liftUpNode(child);
@@ -144,12 +151,12 @@ int constructAST(treeNode * head) {
 					else if((strcmp(child->id->val, "<pm>") == 0) || (strcmp(child->id->val, "<md>") == 0) || (strcmp(child->id->val, "<logicalOp>") == 0) || (strcmp(child->id->val, "<relationalOp>") == 0) )
 						liftUpNode(child);
 
-					// whichId, print_val compression
+					// whichId compression
 					else if(strcmp(child->id->val, "<whichId>") == 0 )
 						liftUpNode(child);
 
 					// <arithOrBoolExprRec> compression
-					else if( child->childL != NULL && (strcmp(child->childL->id->val, "AND") == 0 || strcmp(child->childL->id->val, "OR") == 0 ) && (strcmp(child->parent->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->parent->id->val, "<arithOrBoolExprRec>") == 0 )  )  {
+					else if( child->childL != NULL && (strcmp(child->childL->id->val, "AND") == 0 || strcmp(child->childL->id->val, "OR") == 0 ) && (strcmp(child->parent->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->parent->id->val, "<arithOrBoolExprRec>") == 0 ) && child->parent->childR == child  )  {
 						
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
@@ -160,7 +167,7 @@ int constructAST(treeNode * head) {
 					}
 
 					// <anyTermRec> compression
-					else if( child->childL != NULL && (strcmp(child->childL->id->val, "LT") == 0 || strcmp(child->childL->id->val, "LE") == 0 || strcmp(child->childL->id->val, "GE") == 0 || strcmp(child->childL->id->val, "GT") == 0 || strcmp(child->childL->id->val, "NE") == 0 || strcmp(child->childL->id->val, "EQ") == 0 ) && (strcmp(child->parent->id->val, "<anyTerm>") == 0 || strcmp(child->parent->id->val, "<anyTermRec>") == 0 )  )  {
+					else if( child->childL != NULL && (strcmp(child->childL->id->val, "LT") == 0 || strcmp(child->childL->id->val, "LE") == 0 || strcmp(child->childL->id->val, "GE") == 0 || strcmp(child->childL->id->val, "GT") == 0 || strcmp(child->childL->id->val, "NE") == 0 || strcmp(child->childL->id->val, "EQ") == 0 ) && (strcmp(child->parent->id->val, "<anyTerm>") == 0 || strcmp(child->parent->id->val, "<anyTermRec>") == 0 )  && child->parent->childR == child )  {
 						
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
@@ -171,7 +178,7 @@ int constructAST(treeNode * head) {
 					}
 
 					// <arithmeticExprRec> compression
-					else if( child->childL != NULL && (strcmp(child->childL->id->val, "PLUS") == 0 || strcmp(child->childL->id->val, "MINUS") == 0 ) && (strcmp(child->parent->id->val, "<arithmeticExpr>") == 0 || strcmp(child->parent->id->val, "<arithmeticExprRec>") == 0 )  )  {
+					else if( child->childL != NULL && (strcmp(child->childL->id->val, "PLUS") == 0 || strcmp(child->childL->id->val, "MINUS") == 0 ) && (strcmp(child->parent->id->val, "<arithmeticExpr>") == 0 || strcmp(child->parent->id->val, "<arithmeticExprRec>") == 0 )  && child->parent->childR == child )  {
 						
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
@@ -182,7 +189,7 @@ int constructAST(treeNode * head) {
 					}
 
 					// <termRec> compression
-					else if( child->childL != NULL && (strcmp(child->childL->id->val, "MUL") == 0 || strcmp(child->childL->id->val, "DIV") == 0 ) && (strcmp(child->parent->id->val, "<term>") == 0 || strcmp(child->parent->id->val, "<termRec>") == 0 )  )  {
+					else if( child->childL != NULL && (strcmp(child->childL->id->val, "MUL") == 0 || strcmp(child->childL->id->val, "DIV") == 0 ) && (strcmp(child->parent->id->val, "<term>") == 0 || strcmp(child->parent->id->val, "<termRec>") == 0 ) && child->parent->childR == child )  {
 						
 						child->parent->id  = child->childL->id;
 						child->parent->tptr = child->childL->tptr;
@@ -193,8 +200,9 @@ int constructAST(treeNode * head) {
 					}
 
 					// <arithOrBoolExpr> <anyterm> <arithmeticExpr> <term> <factor> compression
-					else if( strcmp(child->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->id->val, "<anyTerm>") == 0 || strcmp(child->id->val, "<arithmeticExpr>") == 0 || strcmp(child->id->val, "<term>") == 0 || strcmp(child->id->val, "<factor>") == 0 )
+					else if( strcmp(child->id->val, "<arithOrBoolExpr>") == 0 || strcmp(child->id->val, "<anyTerm>") == 0 || strcmp(child->id->val, "<arithmeticExpr>") == 0 || strcmp(child->id->val, "<term>") == 0 || strcmp(child->id->val, "<factor>") == 0 ){
 						liftUpNode(child);
+					}
 
 				}
 			}

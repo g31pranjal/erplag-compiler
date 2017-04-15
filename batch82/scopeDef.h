@@ -47,7 +47,7 @@ typedef struct sy symbolScope;
 struct se {
 	char identifier[25];
 
-	// 1 : variable , 2 : function def , 3 : input parameter , 4 : output , 5 : function dec
+	// 1 : variable , 2 : function only def , 3 : input parameter , 4 : output , 5 : function only dec, 6 : function def & dec
 	int usage;
 
 	char type[25];

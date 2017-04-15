@@ -94,7 +94,7 @@ modified
 modified
 <assignmentStmt>		:		ID <index> ASSIGNOP <expression> <!-- SEMICOL -->
 
-<moduleReuseStmt>		:		<optional> <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
+<moduleReuseStmt>		:		[<optional>] <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
 
 <optional>				:		<!-- SQBO --> <idList> <!-- SQBC --> ASSIGNOP
 <!-- <optional>				:		EMPTY -->

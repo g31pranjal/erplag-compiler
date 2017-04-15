@@ -61,7 +61,8 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 	while(sStack != NULL) {
 		if(strcmp(sStack->identifier, identifier) == 0) {
 			if(sStack->usage == 5 && usage == 2) {
-				sStack->usage = 2;
+				sStack->usage = 6;
+				sStack->lineInit = line;
 				return sStack;
 			}
 			else {
@@ -211,7 +212,10 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
-					newScope = stackScope(scope, child->id->val);
+					if( strcmp(child->id->val, "<module>") == 0 )
+						newScope = stackScope(scope, child->childL->tptr->val);
+					else 
+						newScope = stackScope(scope, child->id->val);
 	 				iterOverScope(child, newScope, errors);
 				}
 				else {

@@ -36,7 +36,6 @@ int checkArrayCases(treeNode * idref, int * errors) {
 }
 
 
-
 int expressionCheckerRec(treeNode * nd, int * errors) {
 
 	char * l, r;
@@ -105,9 +104,7 @@ int expressionCheckerRec(treeNode * nd, int * errors) {
 				checkArrayCases(nd->childL, errors);
 			strcpy(nd->type, nd->childL->type);
 		}
-
 	}
-
 }
 
 
@@ -124,6 +121,7 @@ int expressionCheckerInit(treeNode * exp, int * errors) {
 	}	
 	// printf("exp type : %s\n", exp->type);
 }
+
 
 int switchSemantics(treeNode * swt, int * errors) {
 	
@@ -159,13 +157,55 @@ int switchSemantics(treeNode * swt, int * errors) {
 			}
 			cr = cr->next;
 		}
-
 	}
+}
+
+
+// checkOutp
+
+
+int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
+
+	// check if the called function is visible.
+	// check if the output parameters are correct
+	// check if the input parameters are correct
+
+	treeNode * idr, * idref, * idl, * child;
+	symbolEntry * invokedModule, * currentModule;
+
+	if( strcmp(callMod->childL->id->val, "ID") == 0 ) {
+		// no output values from the function
+
+		idr = NULL;
+		idref = callMod->childL;
+		idl = callMod->childL->next;
+
+		
+	}
+	else {
+
+		idr = callMod->childL;
+		idref = callMod->childL->next;
+		idl = callMod->childL->next->next;	
+	
+
+
+		// checkOutputListCorrectness(idr, idref, sHead, errors);
+		
+	}
+
+
+	// child = callMod->childL;
+
+	// while(child != NULL) {
+	// 	printf("%s\n", child->id->val);
+	// 	child = child->next;
+	// }
 
 }
 
 
-int checkSemantics(treeNode * head, int * errors) {
+int checkSemantics(treeNode * head, symbolScope * sHead, int * errors) {
 
 	treeNode * child;
 	child = head->childL;
@@ -176,7 +216,7 @@ int checkSemantics(treeNode * head, int * errors) {
 			// terminal
 		}
 		else {
-			checkSemantics(child, errors);
+			checkSemantics(child, sHead, errors);
 			
 			// checks the expression subtree
 			if( strcmp(child->id->val, "<expression>") == 0 ) {
@@ -184,6 +224,9 @@ int checkSemantics(treeNode * head, int * errors) {
 			}
 			else if( strcmp(child->id->val, "<condionalStmt>") == 0 ) {
 				switchSemantics(child, errors);
+			}
+			else if( strcmp(child->id->val, "<moduleReuseStmt>") == 0 ) {
+				callingModule(child, sHead, errors);
 			}
 
 		}

@@ -1,4 +1,5 @@
 declare module readArr;
+declare module fuckYeah;
 **the following function computes the sum of first n elements of the array**
 <<module arraySum>>
 takes input[list:array[1..15] of    real, n:integer];

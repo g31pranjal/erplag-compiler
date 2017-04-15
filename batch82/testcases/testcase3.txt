@@ -8,9 +8,9 @@ declare module minus;
 takes input [x:integer, z:boolean, alpha : array [0..5] of integer];
 start
 	declare q : array [0..4] of real;
-	declare w, e,r,t,y,p,u : real;
+	declare w, e,r,t,y,p,u : integer;
 	declare value,i,o : integer;
-	value:= true AND t*y < u*(4.0-6.2)/p;
+	value:=  w > ( e > r ) ;
 	value:= -(e + t);
 end
 
