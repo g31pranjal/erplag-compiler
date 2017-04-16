@@ -30,7 +30,7 @@ symbolScope * stackScope(symbolScope * parent, char * st) {
 
 }
 
-symbolEntry * lookupSymbolEntry(char * identifier, symbolScope * scope, int line, int * errors) {
+symbolEntry * lookupSymbolEntry(char * identifier, symbolScope * scope, int line, int isFunc, int * errors) {
 
 	symbolEntry * se;
 
@@ -38,8 +38,10 @@ symbolEntry * lookupSymbolEntry(char * identifier, symbolScope * scope, int line
 		se = scope->seHead;
 		while(se != NULL) {
 			if(strcmp(se->identifier, identifier) == 0) {
-				se->linesUsed[se->linesUsedNum++] = line;
-				return se;
+				if( !isFunc || ( isFunc && ( se->usage == 2 || se->usage == 6 || se->usage == 5 ) ) ) {
+					se->linesUsed[se->linesUsedNum++] = line;
+					return se;
+				}
 			}
 			se = se->next;
 		}
@@ -198,7 +200,13 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 					else {
 						// printf("looking up %s...\n", child->tptr->val);
-						se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno, errors);
+						
+						if( strcmp(child->parent->id->val, "<moduleReuseStmt>") == 0 ) 
+							se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno, 1, errors);
+						else
+							se = lookupSymbolEntry(child->tptr->val, scope, child->tptr->lno, 0, errors);
+					
+
 					}
 					if(se != NULL) {
 						child->se = se;
@@ -212,10 +220,13 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 
 				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
-					if( strcmp(child->id->val, "<module>") == 0 )
+					if( strcmp(child->id->val, "<module>") == 0 ){
 						newScope = stackScope(scope, child->childL->tptr->val);
-					else 
+					}
+					else {
 						newScope = stackScope(scope, child->id->val);
+					}
+
 	 				iterOverScope(child, newScope, errors);
 				}
 				else {

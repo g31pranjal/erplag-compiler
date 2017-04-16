@@ -40,7 +40,7 @@ int main() {
 
 	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
-		printScopeStructure(sHead);
+		// printScopeStructure(sHead);
 		checkSemantics(head, sHead, &errors);
 	}
 
@@ -56,7 +56,7 @@ int main() {
 
 
 	FILE * fp = fopen(writefn, "w+");
-	printParseTree(head, fp);
+	// printParseTree(head, fp);
 
 	// printParseTree(head, fp);
 

@@ -69,7 +69,7 @@ int constructAST(treeNode * head) {
 	if(head->childL != NULL) {
 		child = head->childL;
 		while(child != NULL) {
-			printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
+			// printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
 
 			if(child->childL == NULL) {
 				// terminal

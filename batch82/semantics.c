@@ -161,7 +161,30 @@ int switchSemantics(treeNode * swt, int * errors) {
 }
 
 
-// checkOutp
+symbolScope * resolveCurrentModule(symbolScope * currScope) {
+
+	char * stamp;
+	symbolEntry * se;
+
+	while(currScope->parent != NULL) {
+		stamp = currScope->stamp;
+		currScope = currScope->parent;
+	}
+
+	if( strcmp(stamp, "<driverModule>") == 0 )
+		return NULL;
+	else {
+		se = currScope->seHead;
+
+		while(se != NULL) {
+			if( strcmp(se->identifier, stamp) == 0 )
+				return se;
+			se = se->next;
+		}
+	}
+
+	return NULL;
+}
 
 
 int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
@@ -174,34 +197,39 @@ int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 	symbolEntry * invokedModule, * currentModule;
 
 	if( strcmp(callMod->childL->id->val, "ID") == 0 ) {
-		// no output values from the function
-
 		idr = NULL;
 		idref = callMod->childL;
 		idl = callMod->childL->next;
-
-		
 	}
 	else {
-
 		idr = callMod->childL;
 		idref = callMod->childL->next;
 		idl = callMod->childL->next->next;	
-	
-
-
-		// checkOutputListCorrectness(idr, idref, sHead, errors);
-		
 	}
 
+	currentModule = resolveCurrentModule(callMod->scope);
+	invokedModule = idref->se;
 
-	// child = callMod->childL;
+	if(invokedModule != NULL) {
+		if(invokedModule == currentModule) {
+			printf("%sERROR : %s(semantics)%s Recursive call to module '%s' is not allowed at line %d\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
+			*errors = 1;
+		}
 
-	// while(child != NULL) {
-	// 	printf("%s\n", child->id->val);
-	// 	child = child->next;
-	// }
+		if(invokedModule->usage == 5 ) {
+			printf("%sERROR : %s(semantics)%s The module '%s' refernced at line %d is not defined and only declared\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
+			*errors = 1;
+		}
+		else if(invokedModule->usage == 2) {
+			if(idref->tptr->lno < invokedModule->lineInit) {
+				printf("%sERROR : %s(semantics)%s The module '%s' refernced at line %d must be declared before referencing.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
+				*errors = 1;			
+			}
+		}
+	}
 
+	checkInputParameters()
+	
 }
 
 
