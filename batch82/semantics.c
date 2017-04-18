@@ -226,7 +226,6 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 					break;
 				}
 				else {
-					printf("consumed one\n");
 					se = se->next;
 					idl = idl->prev;
 				}

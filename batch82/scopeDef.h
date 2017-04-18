@@ -65,6 +65,10 @@ struct se {
 
 	symbolEntry * next;
 
+	char temporary[5];
+
+	int offset;
+
 };
 
 

@@ -2,6 +2,7 @@
 #include "parserDef.h"
 #include "scopeDef.h"
 
+int OFFSET = 0;
 
 symbolScope * stackScope(symbolScope * parent, char * st) {
 	symbolScope * newScope;
@@ -82,10 +83,24 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 		newEntry->usage = usage;
 		memset(newEntry->type, 0, sizeof(newEntry->type));
 		strcpy(newEntry->type, type);
+		memset(newEntry->temporary, 0, 5);
 		newEntry->isArray = isArray;
 		newEntry->startInd = s;
 		newEntry->endInd = e;
 		newEntry->lineInit = line;
+
+		if(scope->parent != NULL) {
+			newEntry->offset = OFFSET;
+			if( strcmp(type, "INTEGER") == 0 )
+				OFFSET += (e-s+1)*2;
+			else if( strcmp(type, "REAL") == 0 )
+				OFFSET += (e-s+1)*4;
+			else if( strcmp(type, "BOOLEAN") == 0 )
+				OFFSET += (e-s+1)*1;
+		}
+		else {
+			newEntry->offset = -1;
+		}
 
 		memset(newEntry->linesUsed, 0, sizeof(newEntry->linesUsed));
 		newEntry->linesUsedNum = 0;
@@ -115,7 +130,7 @@ int printScopeStructure(symbolScope * head) {
 	seHead = head->seHead;
 
 	while(seHead != NULL) {
-		printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit );
+		printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d, OFFSET : %d, TEMP : %s\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit, seHead->offset, seHead->temporary );
 		seHead = seHead->next;
 	}	
 
@@ -218,7 +233,7 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 			else {
 				// non terminal 
 
-				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
+				if (( strcmp(child->id->val, "<condionalStmt>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
 					if( strcmp(child->id->val, "<module>") == 0 ){
 						newScope = stackScope(scope, child->childL->tptr->val);

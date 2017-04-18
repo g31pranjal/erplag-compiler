@@ -11,7 +11,6 @@
 #include "codegen.c"
 
 
-
 int main() {
 
 	char * filename = "testcases/testcase3.txt";
@@ -46,7 +45,7 @@ int main() {
 	}
 
 	if(!errors) {
-		codeGenInit(head);
+		codeGenInit(head, sHead);
 	}
 
 
