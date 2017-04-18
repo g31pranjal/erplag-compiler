@@ -11,22 +11,32 @@ start
 	value:= x*x;
 end
 
-
-
+<<module square>>
+takes input [x:integer, z:boolean, alpha : array [0..5] of integer];
+start
+	declare q : array [0..4] of real;
+	declare w, e,r,t,y,p,u : integer;
+	declare value,i,o : integer;
+	value:=  q[1] > ( e > r ) ;
+	value:= -(e + t);
+end
 
 <<<driver program>>>
 start
-	declare v_1_2_3,i,j,x,a:integer;
-	get_value(v_1_2_3);
+	declare v_1_2_3,i,i,j,x,a:integer;
+	declare ar : array [0..5] of integer;
+	declare adj,i : real;
+	declare bl : boolean;
+	get_value(ar[10]);
 	declare result_:integer;
-	print(result_);
+	print(ar[adj]);
 
-	[result_]:=use module square with parameters v_1_2_3;
+	[result_]:=use module square with parameters v_1_2_3, ar;
 
-	for (i in 0..100)
+	while (i)
 	start 
-		x := a;
-		for (j in 0..12)
+		x := b;
+		for (adj in 0..12)
 		start 
 			j := 0;
 		end
@@ -34,15 +44,6 @@ start
 
 end
 
-<<module square>>
-takes input [x:integer, z:boolean, alpha : array [0..5] of integer];
-start
-	declare q : array [0..4] of real;
-	declare w, e,r,t,y,p,u : integer;
-	declare value,i,o : integer;
-	value:=  w > ( e > r ) ;
-	value:= -(e + t);
-end
 
 **notice that this test case does not declare the module before the driver module, still it is syntactically correct
 as moduleDeclarations is optional. Testing whether a module is declared before usage is a matter of semantic analysis**

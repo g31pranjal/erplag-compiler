@@ -3,7 +3,6 @@
 
 int checkArrayCases(treeNode * idref, int * errors) {
 
-	
 	symbolEntry * se = idref->se;
 	treeNode * ind;
 	int iVal;
@@ -15,13 +14,13 @@ int checkArrayCases(treeNode * idref, int * errors) {
 				// check index bounds
 				iVal = atoi(ind->childL->tptr->val);
 				if( iVal < se->startInd || iVal > se->endInd ) {
-					printf("%sERROR : %s(scope resolution)%s Array index for identifier '%s' at line %d is out of bounds.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+					printf("%sERROR : %s(semantics)%s Array index for identifier '%s' at line %d is out of bounds.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
 					*errors = 1;
 				}
 			}
 			else {
 				if( strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
-					printf("%sERROR : %s(scope resolution)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+					printf("%sERROR : %s(semantics)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
 					*errors = 1;
 				}
 				else if(ind->childL->se->isArray == 1)
@@ -29,9 +28,12 @@ int checkArrayCases(treeNode * idref, int * errors) {
 			}
 		}
 		else {
-			printf("%sERROR : %s(scope resolution)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+			printf("%sERROR : %s(semantics)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
 			*errors = 1;
 		}
+	}
+	else {
+		printf("error in AST.\n");
 	}
 }
 
@@ -100,7 +102,7 @@ int expressionCheckerRec(treeNode * nd, int * errors) {
 		else if( strcmp(nd->childL->id->val,"TRUE") == 0 || strcmp(nd->childL->id->val,"FALSE") == 0 )
 			strcpy(nd->type, "BOOLEAN");
 		else if( strcmp(nd->childL->id->val,"ID") == 0 ) {
-			if( nd->childL->se->isArray == 1 )
+			if( nd->childL->se != NULL && nd->childL->se->isArray == 1 )
 				checkArrayCases(nd->childL, errors);
 			strcpy(nd->type, nd->childL->type);
 		}
@@ -118,7 +120,7 @@ int expressionCheckerInit(treeNode * exp, int * errors) {
 	else {
 		expressionCheckerRec(exp->childR, errors);
 		strcpy(exp->type, exp->childR->type);
-	}	
+	}
 	// printf("exp type : %s\n", exp->type);
 }
 
@@ -186,6 +188,59 @@ symbolScope * resolveCurrentModule(symbolScope * currScope) {
 	return NULL;
 }
 
+int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idl, int * errors) {
+
+	char *mName;
+	symbolScope *childScope, *mScope;
+	symbolEntry *se, * prmtrS;
+
+	mName = invokedModule->identifier;
+	childScope = scopeRoot->childL;
+
+	while(childScope != NULL) {
+		if( strcmp(mName, childScope->stamp) == 0 ) {
+			mScope = childScope;
+		}
+		childScope = childScope->next;
+	}
+
+	idl = idl->childR;
+	se = mScope->seHead;
+
+	while(idl != NULL) {
+
+		prmtrS = idl->se;
+
+		printf("getting here\n");
+		printf("%s %s\n", se->identifier, prmtrS->identifier);
+
+		if(prmtrS != NULL) {
+			printf("and here\n");
+
+			if(se->usage == 3) {
+
+				if( ! ( strcmp(prmtrS->type, se->type) == 0 && prmtrS->isArray == se->isArray && prmtrS->startInd == se->startInd && prmtrS->endInd == se->endInd ) ) {
+					printf("%sERROR : %s(semantics)%s actual and formal parameters are not matching");
+					*errors = 1;
+					break;
+				}
+				else {
+					printf("consumed one\n");
+					se = se->next;
+					idl = idl->prev;
+				}
+			}
+			else {
+				se = se->next;
+				continue;
+			}
+		}
+
+	}
+
+}
+
+
 
 int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 
@@ -226,10 +281,66 @@ int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 				*errors = 1;			
 			}
 		}
-	}
+		else {
 
-	checkInputParameters()
+			checkInputParameters(idref->se, sHead, idl, errors);
 	
+		}
+	}
+}
+
+
+int checkIOStmt(treeNode * io, int * errors) {
+
+	treeNode * var;
+	
+	if(io->childL != NULL) {
+		if( strcmp(io->childL->id->val, "PRINT") == 0 ) {
+			var = io->childL->next;
+			if( strcmp(var->childL->id->val, "ID") == 0 && var->childL->se != NULL && var->childL->se->isArray == 1 )
+				checkArrayCases(var->childL, errors);
+		}
+		else if( strcmp(io->childL->id->val, "GET_VALUE") == 0 ) {
+			if( io->childL->next->se != NULL && io->childL->next->se->isArray == 1 )
+				checkArrayCases(io->childL->next, errors);
+		}
+		else {
+			printf("error in AST.\n");	
+		}
+	}
+	else {
+		printf("error in AST.\n");
+	}
+}
+
+
+int checkIterativeStmt(treeNode * it, int * errors) {
+
+	treeNode * tmp;
+
+	if(it->childL != NULL) {
+		if( strcmp(it->childL->id->val, "FOR") == 0 ) {
+			tmp = it->childL->next;
+			if(tmp != NULL && tmp->se != NULL && strcmp(tmp->se->type, "INTEGER") != 0 ) {
+				printf("%sERROR : %s(semantics)%s The identifier '%s' used as the control variable of the FOR loop at line %d, has to be of INTEGER type\n", BOLDRED, BOLDBLUE, RESET, tmp->tptr->val, tmp->tptr->lno);
+				*errors = 1;
+			}
+		}
+		else if( strcmp(it->childL->id->val, "WHILE") == 0 ) {
+			tmp = it->childL->next;
+			expressionCheckerRec(tmp, errors);
+			if( strcmp(tmp->type, "BOOLEAN") != 0 ) {
+				printf("%sERROR : %s(semantics)%s The control expression of the WHILE loop at line %d, has to be of BOOLEAN type\n", BOLDRED, BOLDBLUE, RESET, tmp->tptr->val, it->childL->tptr->lno);
+				*errors = 1;
+			}
+		}
+		else {
+			printf("error in AST.\n");	
+		}
+	}
+	else {
+		printf("error in AST.\n");
+	}
 }
 
 
@@ -255,6 +366,12 @@ int checkSemantics(treeNode * head, symbolScope * sHead, int * errors) {
 			}
 			else if( strcmp(child->id->val, "<moduleReuseStmt>") == 0 ) {
 				callingModule(child, sHead, errors);
+			}
+			else if( strcmp(child->id->val, "<ioStmt>") == 0 ) {
+				checkIOStmt(child, errors);
+			}
+			else if( strcmp(child->id->val, "<iterativeStmt>") == 0 ) {
+				checkIterativeStmt(child, errors);
 			}
 
 		}

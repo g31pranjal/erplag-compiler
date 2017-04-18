@@ -41,7 +41,7 @@ int liftUpNode(treeNode * child) {
 	if(child->parent->childR == child) {
 		// right child of its parent 
 		child->parent->childR = child->childR;
-		child->childL->prev = NULL;
+		child->childR->next = NULL;
 	}
 	else {
 		child->next->prev = child->childR;
