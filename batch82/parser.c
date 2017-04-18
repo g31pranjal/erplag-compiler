@@ -858,6 +858,8 @@ rule * SearchRuleInParseTable(parseList * pl, int ntId, int tId) {
 }
 
 
+
+
 treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, int * errors) {
 
 	setUpStream(filename);
@@ -1006,6 +1008,67 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, in
 
 
 
+int printParseTreeOrig(treeNode * head)  {
+
+	int first = 0;
+	treeNode * child;
+	child = head->childL;
+
+	if(child != NULL) {
+		while(child != NULL) {
+
+			printParseTreeOrig(child);
+			if(first == 0) {
+				// printing a non terminal 
+				// printf("node : %x\n", head);
+				
+				if(head->parent != NULL) {
+					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+				}
+					
+				else{
+					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n", head->id->val);
+				}
+
+				first = 1;
+			}
+			child = child->next;
+
+		}
+	}
+	
+	else {
+		if(head->tptr != NULL) {
+			// with the token 
+			if(head->tptr->id == 31 || head->tptr->id == 32 ){
+				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+			}
+			else { 
+				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+			}
+		}
+		else {
+			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+		
+		}
+	}
+
+}
+
+
+int countNodes(treeNode * head, int * count) {
+	
+	*count = *count + 1;
+	treeNode * child;
+	child = head->childL;
+	if(child != NULL) {
+		while(child != NULL) {
+			countNodes(child, count);
+			child = child->next;
+		}
+	}
+}
+
 
 // int printParseTree( treeNode * head, FILE * fp)  {
 
@@ -1075,63 +1138,63 @@ treeNode * parseInputSourceCode(grammar * gr, char *filename, parseList * pl, in
 // }
 
 
-int printParseTree(treeNode * head, FILE * fp)  {
+// int printParseTree(treeNode * head, FILE * fp)  {
 
-	int first = 0;
-	treeNode * child;
-	child = head->childL;
-
-
-	// printf("starting printing on head : %x\n", head);
-
-	if(child != NULL) {
+// 	int first = 0;
+// 	treeNode * child;
+// 	child = head->childL;
 
 
-		while(child != NULL) {
+// 	// printf("starting printing on head : %x\n", head);
 
-			printParseTree(child, fp);
-			if(first == 0) {
-				// printing a non terminal 
-				// printf("node : %x\n", head);
+// 	if(child != NULL) {
+
+
+// 		while(child != NULL) {
+
+// 			printParseTree(child, fp);
+// 			if(first == 0) {
+// 				// printing a non terminal 
+// 				// printf("node : %x\n", head);
 				
-				if(head->parent != NULL) {
-					// printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
-					printf("%s ( %x ) parent of %s ( %x )\n", head->parent->id->val, head->parent, head->id->val, head);
-					// fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id)->val, head->id->val);	
-				}
+// 				if(head->parent != NULL) {
+// 					// printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+// 					printf("%s ( %x ) parent of %s ( %x )\n", head->parent->id->val, head->parent, head->id->val, head);
+// 					// fprintf(fp, "---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id)->val, head->id->val);	
+// 				}
 					
-				else{
-					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
-					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
-				}
+// 				else{
+// 					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 					fprintf(fp, "---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n",  head->id->val);
+// 				}
 
-				first = 1;
-			}
-			child = child->next;
+// 				first = 1;
+// 			}
+// 			child = child->next;
 
-		}
-	}
-	else {
-		if(head->tptr != NULL) {
-			// with the token 
-			if(head->tptr->id == 31 || head->tptr->id == 32 ){
-				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
-			}
-			else { 
-				printf("%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
-				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
-			}
-		}
-		else {
-			// printf("terminal node : %d\n", head->id);
-			printf("---\t\t---\t\t %s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
-			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
+// 		}
+// 	}
+// 	else {
+// 		if(head->tptr != NULL) {
+// 			// with the token 
+// 			if(head->tptr->id == 31 || head->tptr->id == 32 ){
+// 				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
+// 				fprintf(fp, "%s\t\t%d\t\t%s\t\t%s\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val, head->parent);
+// 			}
+// 			else { 
+// 				printf("%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
+// 				fprintf(fp, "%s\t\t%d\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val, head->parent);
+// 			}
+// 		}
+// 		else {
+// 			// printf("terminal node : %d\n", head->id);
+// 			printf("---\t\t---\t\t %s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
+// 			fprintf(fp, "---\t\t---\t\t%s\t\t---\t\t%s (%x)\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val, head->parent );
 
-		}
-	}
-
-
+// 		}
+// 	}
 
 
-}
+
+
+// }

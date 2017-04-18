@@ -8,6 +8,7 @@
 #include "ast.c"
 #include "scope.c"
 #include "semantics.c"
+#include "codegen.c"
 
 
 
@@ -44,6 +45,13 @@ int main() {
 		checkSemantics(head, sHead, &errors);
 	}
 
+	if(!errors) {
+		codeGenInit(head);
+	}
+
+
+
+
 
 	// printf("error reporting : %d\n", errors);
 
@@ -55,8 +63,7 @@ int main() {
 
 
 
-	FILE * fp = fopen(writefn, "w+");
-	// printParseTree(head, fp);
+	// printParseTreeOrig(head);
 
 	// printParseTree(head, fp);
 

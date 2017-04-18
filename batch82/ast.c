@@ -66,14 +66,14 @@ int constructAST(treeNode * head) {
 
 	int i, toRemove, arrL = sizeof(keep)/sizeof(int);
 
+	
 	if(head->childL != NULL) {
 		child = head->childL;
 		while(child != NULL) {
 			// printf("%d, %s, %d . \n", child->id->id, child->id->val, child->id->type);
-
+			
 			if(child->childL == NULL) {
 				// terminal
-				
 				toRemove = 1;
 				for(i=0;i<arrL;i++) {
 					if(keep[i] == child->id->id) {
@@ -82,10 +82,8 @@ int constructAST(treeNode * head) {
 					}
 				}
 				if(toRemove) {
-					// printf(" -- removed\n");
 					removeTreeNode(head, child);	
 				}
-
 			}
 			else {
 				// non terminal (folding empty terminals and compressing recursion)
@@ -96,7 +94,6 @@ int constructAST(treeNode * head) {
 					removeTreeNode(head, child);
 				}
 				else {
-
 					// printf("in for child %s\n", child->id->val);
 					// printf("in for child %s\n", child->childL->id->val);
 
@@ -207,7 +204,57 @@ int constructAST(treeNode * head) {
 				}
 			}
 			child = child->next;
+
 		}
 	}
 }
 
+
+
+
+int printAST(treeNode * head)  {
+
+	int first = 0;
+	treeNode * child;
+	child = head->childL;
+
+	if(child != NULL) {
+		while(child != NULL) {
+
+			printParseTreeOrig(child);
+			if(first == 0) {
+				// printing a non terminal 
+				// printf("node : %x\n", head);
+				
+				if(head->parent != NULL) {
+					printf("---\t\t---\t\t---\t\t---\t\t%s\t\tNO\t\t%s\n", head->parent->id->val, head->id->val);
+				}
+					
+				else{
+					printf("---\t\t---\t\t---\t\t---\t\tROOT\t\tNO\t\t%s\n", head->id->val);
+				}
+
+				first = 1;
+			}
+			child = child->next;
+
+		}
+	}
+	
+	else {
+		if(head->tptr != NULL) {
+			// with the token 
+			if(head->tptr->id == 31 || head->tptr->id == 32 ){
+				printf("%s\t\t%d\t\t%s\t\t%s\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->tptr->val, head->parent->id->val);
+			}
+			else { 
+				printf("%s\t\t%d\t\t%s\t\t---\t\t%s\t\tYES\t\t---\n", head->tptr->val, head->tptr->lno, head->tptr->lxm, head->parent->id->val);
+			}
+		}
+		else {
+			printf("---\t\t---\t\t %s\t\t---\t\t%s\t\tYES\t\t---\n", ref[head->id->id], head->parent->id->val );
+		
+		}
+	}
+
+}
