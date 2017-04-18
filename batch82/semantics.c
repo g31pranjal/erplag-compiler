@@ -19,21 +19,22 @@ int checkArrayCases(treeNode * idref, int * errors) {
 				}
 			}
 			else {
-				if( strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
+				if( ind->childL->se != NULL && strcmp(ind->childL->se->type,"INTEGER") != 0 ) {
 					printf("%sERROR : %s(semantics)%s Index of the ARRAY type identifier '%s' at line %d should be of type INTEGER.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
 					*errors = 1;
 				}
-				else if(ind->childL->se->isArray == 1)
-					checkArrayCases(ind->childL, errors);
+				else {
+					// scoping errors are there.
+				}
 			}
 		}
 		else {
-			printf("%sERROR : %s(semantics)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDYELLOW, RESET, idref->tptr->val, idref->tptr->lno);
+			printf("%sERROR : %s(semantics)%s Identifier '%s' at line %d of type ARRAY should be addressed by an INTEGER index.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
 			*errors = 1;
 		}
 	}
 	else {
-		printf("error in AST.\n");
+		// printf("error in AST.\n");
 	}
 }
 
@@ -188,7 +189,7 @@ symbolScope * resolveCurrentModule(symbolScope * currScope) {
 	return NULL;
 }
 
-int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idl, int * errors) {
+int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idl, int lno, int * errors) {
 
 	char *mName;
 	symbolScope *childScope, *mScope;
@@ -207,20 +208,20 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 	idl = idl->childR;
 	se = mScope->seHead;
 
-	while(idl != NULL) {
+	while(idl != NULL && se != NULL) {
 
 		prmtrS = idl->se;
 
-		printf("getting here\n");
-		printf("%s %s\n", se->identifier, prmtrS->identifier);
+		// printf("getting here\n");
+		// printf("%s %s\n", se->identifier, prmtrS->identifier);
 
 		if(prmtrS != NULL) {
-			printf("and here\n");
-
 			if(se->usage == 3) {
-
+				// printf("valid\n");
+				// printf("%s\n", prmtrS->type);
+			
 				if( ! ( strcmp(prmtrS->type, se->type) == 0 && prmtrS->isArray == se->isArray && prmtrS->startInd == se->startInd && prmtrS->endInd == se->endInd ) ) {
-					printf("%sERROR : %s(semantics)%s actual and formal parameters are not matching");
+					printf("%sERROR : %s(semantics)%s actual and formal parameters are not matching at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
 					*errors = 1;
 					break;
 				}
@@ -229,13 +230,23 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 					se = se->next;
 					idl = idl->prev;
 				}
+
+
 			}
 			else {
 				se = se->next;
 				continue;
 			}
 		}
+		else {
+			// printf("error in AST.\n");
+			break;
+		}
+	}
 
+	if(idl != NULL || se != NULL ) {
+		printf("%sERROR : %s(semantics)%s number of parameters passed to the module differs at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+		*errors = 1;
 	}
 
 }
@@ -283,7 +294,7 @@ int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 		}
 		else {
 
-			checkInputParameters(idref->se, sHead, idl, errors);
+			checkInputParameters(idref->se, sHead, idl, idref->tptr->lno, errors);
 	
 		}
 	}
@@ -305,11 +316,11 @@ int checkIOStmt(treeNode * io, int * errors) {
 				checkArrayCases(io->childL->next, errors);
 		}
 		else {
-			printf("error in AST.\n");	
+			// printf("error in AST.\n");	
 		}
 	}
 	else {
-		printf("error in AST.\n");
+		// printf("error in AST.\n");
 	}
 }
 
@@ -335,12 +346,39 @@ int checkIterativeStmt(treeNode * it, int * errors) {
 			}
 		}
 		else {
-			printf("error in AST.\n");	
+			// printf("error in AST.\n");	
 		}
 	}
 	else {
-		printf("error in AST.\n");
+		// printf("error in AST.\n");
 	}
+}
+
+int checkAssignmentStmt(treeNode * assg, int * errors) {
+
+	treeNode * idref, * exp ;
+
+	idref = assg->childL;
+	exp = assg->childR;
+
+	if(idref->se != NULL ) {
+		if(idref->se->isArray == 1){
+			checkArrayCases(idref, errors);
+		}
+		if( strcmp(exp->type, "") != 0 ) {
+			if( strcmp(exp->type, idref->se->type) != 0 ) {
+				printf("%sERROR : %s(semantics)%s expression on the right side of := does not match the type of variable in LHS at line %d\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->lno);
+				*errors = 1;
+			}
+		}
+		else {
+			// expression calculation error
+		}
+	}
+	else {
+		// scoping errors 
+	}
+
 }
 
 
@@ -372,6 +410,9 @@ int checkSemantics(treeNode * head, symbolScope * sHead, int * errors) {
 			}
 			else if( strcmp(child->id->val, "<iterativeStmt>") == 0 ) {
 				checkIterativeStmt(child, errors);
+			}
+			else if( strcmp(child->id->val, "<assignmentStmt>") == 0 ) {
+				checkAssignmentStmt(child, errors);
 			}
 
 		}
