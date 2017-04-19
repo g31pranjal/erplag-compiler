@@ -92,11 +92,11 @@ modified
 <simpleStmt>			:		<moduleReuseStmt>
 <!-- <assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> SEMICOL -->
 modified
-<assignmentStmt>		:		ID <index> ASSIGNOP <expression> <!-- SEMICOL -->
+<assignmentStmt>		:		ID <index> <!-- ASSIGNOP --> <expression> <!-- SEMICOL -->
 
 <moduleReuseStmt>		:		[<optional>] <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
 
-<optional>				:		<!-- SQBO --> <idList> <!-- SQBC --> ASSIGNOP
+<optional>				:		<!-- SQBO --> <idList> <!-- SQBC --> <!-- ASSIGNOP -->
 <!-- <optional>				:		EMPTY -->
 
 <!-- <idList>				:		ID <idListRec> -->
@@ -152,8 +152,8 @@ modified
 <declareStmt>			:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
 
 <condionalStmt>			:		<!-- SWITCH BO --> <expression> <!-- BC START --> <caseStmts> <default><!--  END -->
-<caseStmts>				:		<!-- CASE --> <value> <!-- COLON --> <statements> <!-- BREAK SEMICOL --> <caseStmtsRec>
-<caseStmtsRec>			:		<!-- CASE --> <value> <!-- COLON --> <statements> <!-- BREAK SEMICOL --> <caseStmtsRec>
+<caseStmts>				:		<!-- CASE --> { <value> <!-- COLON --> <statements> } <!-- BREAK SEMICOL --> <!-- <caseStmtsRec> -->
+<!-- <caseStmtsRec>			:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec> -->
 
 <!-- <caseStmtsRec>			:		EMPTY -->
 <value>					:		NUM
@@ -162,8 +162,8 @@ modified
 
 <default>				:		<!-- DEFAULT COLON --> <statements> <!-- BREAK SEMICOL -->
 <!-- <default>				:		EMPTY -->
-<iterativeStmt>			:		FOR <!-- BO --> ID <!-- IN --> <range> <!-- BC START --> <statements> <!-- END -->
-<iterativeStmt>			:		WHILE <!-- BO --> <arithOrBoolExpr> <!-- BC START --> <statements> <!-- END -->
+<iterativeStmt>			:		FOR <!-- BO --> ID <!-- IN --> <range> <!-- BC START --> [<statements>] <!-- END -->
+<iterativeStmt>			:		WHILE <!-- BO --> <arithOrBoolExpr> <!-- BC START --> [<statements>] <!-- END -->
 <range>					:		NUM <!-- RANGEOP --> NUM
 
 

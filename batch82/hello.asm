@@ -1,3 +1,7 @@
+section .bss 
+abc: resb 20
+
+
 section .text
    global _start     ;must be declared for linker (ld)
         

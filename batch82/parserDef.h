@@ -42,6 +42,7 @@ Tanaya Jha (2013B3A7304P)
 
 #include "lexerDef.h"
 #include "scopeDef.h"
+#include "codegenDef.h"
 
 #ifndef _grammar
 
@@ -164,8 +165,12 @@ struct tn {
 
 	char type[25];
 
-	// for terminal
 	token * tptr;
+
+	codeBlock * blk;
+
+	char label[10];
+	char temporary[5];
 
 };
 

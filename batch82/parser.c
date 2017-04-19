@@ -803,7 +803,11 @@ treeNode * createTreeNode(element * id, treeNode * parent) {
 	nw->scope = NULL;
 	nw->se = NULL;
 
+	nw->blk = NULL;
+
 	memset(nw->type, 0, 25);
+	memset(nw->label, 0, 10);
+	memset(nw->temporary, 0, 5);
 
 	nw->id = id;
 
@@ -1036,7 +1040,7 @@ int printParseTreeOrig(treeNode * head)  {
 
 		}
 	}
-	
+
 	else {
 		if(head->tptr != NULL) {
 			// with the token 

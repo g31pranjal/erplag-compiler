@@ -38,6 +38,8 @@ int main() {
 		constructAST(head);
 	}
 
+	printParseTreeOrig(head);
+
 	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
 		// printScopeStructure(sHead);
@@ -45,8 +47,10 @@ int main() {
 	}
 
 	if(!errors) {
-		codeGenInit(head, sHead);
-	}
+		FILE * fp = fopen("model.asm", "w+");
+		codeGenInit(head, sHead, fp);
+		fclose(fp);
+	}	
 
 
 

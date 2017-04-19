@@ -1,6 +1,8 @@
 
 
+#ifndef _codegenStruct
 
+#define _codegenStruct
 
 
 typedef struct c_ln codeLine;
@@ -16,3 +18,6 @@ struct c_bl {
 	codeLine * top;
 	codeLine * bot;
 };
+
+
+#endif
