@@ -164,9 +164,6 @@ int printScopeStructure(symbolScope * head) {
 
 		// identifier - usage - type - line declared - depth - width - offset
 		
-		printf("IDENTIFIER \t\t USAGE \t\t TYPE \t\t LINE NO. \t\t SCOPE LEVEL \t\t WIDTH \t\t OFFSET\n");
-		printf("----------------------------------------------------------------------------------------------------------------\n\n");
-
 		if(seHead->isArray == 1) {
 			printf("%s \t\t %s \t\t Array(%d, %s) \t\t %d \t\t %d \t\t %d \t\t %d\n", seHead->identifier, usg[seHead->usage], seHead->endInd - seHead->startInd, seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
 		}
