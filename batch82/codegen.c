@@ -38,7 +38,6 @@ codeBlock * createCodeBlock() {
 
 int addCodeLine(char * buffer, codeBlock * cb) {
 
-
 	codeLine * new;
 	new = (codeLine *)malloc(sizeof(codeLine));
 	new->next = NULL;
@@ -74,6 +73,7 @@ int printCodeBlock(codeBlock * blk) {
 		ln = ln->next;
 	}
 }
+
 
 int printToFile(codeBlock * blk, FILE * fp) {
 
@@ -128,13 +128,15 @@ int codeGenIO(treeNode * ptr) {
 
 		addCodeLine("\tint\t80h\n", blk);
 
-		ptr->blk = blk;
 
 	}
 	else {
 		// error in AST.
 	}
+
+	ptr->blk = blk;
 }
+
 
 int codeGenAssg(treeNode * ptr) {
 	// this function gets only the <assignmentStmt>
@@ -154,14 +156,124 @@ int codeGenAssg(treeNode * ptr) {
 		// handle array element 
 	}
 
+	printf("child next in assignment --------------------\n");
+	printCodeBlock(child->next->blk);
+
 	mergeCodeBlocks(blk, child->next->blk);
 	ptr->blk = blk;
-
+	ptr->parent->blk = blk;
 }
+
 
 int codeGenSwitch(treeNode * ptr) {
-	
+	// have to complete
+
+	codeBlock * blk, *sBlk, *dBlk;
+	blk = createCodeBlock();
+
+	treeNode * id, * cSt, * cStc;
+	id = ptr->childL;
+	cSt = id->next;
+
+	char l1[10], lf[10];
+
+	if(cSt != NULL) {
+
+		cStc = cSt->childL; 
+
+		getLabel();
+		strcpy(lf, LABEL_BUF);
+
+		getLabel();
+		strcpy(l1, LABEL_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "%s :\n", l1);
+		addCodeLine(buffer, blk);
+
+		if( strcmp(cStc->id->val, "<value>") == 0 ) {
+			
+			while(cStc != NULL) {
+
+				if(strcmp(cStc->childL->id->val, "NUM") == 0) {
+					addCodeLine("\t; a case begins\n", blk);
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tcmp %s, %s\n", id->se->temporary, cStc->childL->tptr->val);
+					addCodeLine(buffer, blk);
+
+					getLabel();
+					strcpy(l1, LABEL_BUF);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tjne %s\n", l1);
+					addCodeLine(buffer, blk);
+				}
+				else if(strcmp(cStc->childL->id->val, "TRUE") == 0) {
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tcmp %s, 1\n", id->se->temporary);
+					addCodeLine(buffer, blk);
+
+					getLabel();
+					strcpy(l1, LABEL_BUF);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tjne %s\n", l1);
+					addCodeLine(buffer, blk);
+				}
+				if(strcmp(cStc->childL->id->val, "FALSE") == 0) {
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tcmp %s, 0\n", id->se->temporary);
+					addCodeLine(buffer, blk);
+
+					getLabel();
+					strcpy(l1, LABEL_BUF);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tjne %s\n", l1);
+					addCodeLine(buffer, blk);
+				}
+		
+				cStc = cStc->next;
+
+				if( strcmp(cStc->id->val, "<statements>") == 0 ) {
+					sBlk = cStc->blk;
+
+					blk->bot->next = sBlk->top;
+					blk->bot = sBlk->bot;
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tjmp %s\n", lf);
+					addCodeLine(buffer, blk);
+
+					addCodeLine("\n", blk);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "%s :\n", l1);
+					addCodeLine(buffer, blk);
+				}
+
+				cStc = cStc->next;
+			}
+
+			memset(buffer, 0, 100);
+			sprintf(buffer, "%s :\n", lf);
+			addCodeLine(buffer, blk);
+		} 
+	}
+	else {
+		// no case statements found.
+	}
+
+	if(cSt->next != NULL && strcmp(cSt->next->id->val, "<default>") == 0  ) {
+		dBlk = cSt->next->childL->blk;
+
+		blk->bot->next = dBlk->top;
+		blk->bot = dBlk->bot;
+	}
+
+	ptr->blk = blk;
 }
+
 
 int codeGenExprRec(treeNode * ptr) {
 
@@ -609,9 +721,7 @@ int codeGenExpr(treeNode * ptr) {
 		strcpy(ptr->temporary, ptr->childL->temporary);
 		
 		// empty block for expression
-		codeBlock * blk;
-		blk = createCodeBlock();
-		ptr->blk = blk;
+		ptr->blk = ptr->childL->blk;
 
 	}
 	else {
@@ -716,14 +826,12 @@ int codeGenIter(treeNode * ptr) {
 		sprintf(buffer, "%s :\n", l2);
 		addCodeLine(buffer, blk);
 
-		// printf("%s\n", child->next->id->val);
-		printCodeBlock(blk);
-
-
 	}
 	else {
 		// error in AST.
 	}
+
+	ptr->blk = blk;
 }
 
 
@@ -732,9 +840,19 @@ int codeGenStmts(treeNode * ptr) {
 	codeBlock * blk;
 	blk = createCodeBlock();
 
-	addCodeLine("\t;statements", blk);
-	addCodeLine("\n", blk);
-	addCodeLine("\n", blk);
+	treeNode * child;
+
+	addCodeLine("\t;a block of statements\n", blk);
+	
+	child = ptr->childR;
+
+	while(child != NULL) {
+		printf("%s %s %s\n", child->id->val, child->parent->id->val, child->parent->parent->id->val);
+		if( strcmp(child->id->val, "<declareStmt>") != 0 )
+			mergeCodeBlocks(blk, child->blk);
+		child = child->prev;
+
+	}
 
 	ptr->blk = blk;
 }
@@ -797,7 +915,7 @@ int addTemporaries(symbolScope * head) {
 
 int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 
-	treeNode * stmts;
+	treeNode * modDef;
 	int i;
 	char buffer[100];
 
@@ -814,8 +932,12 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 		printScopeStructure(sHead);
 
 		// recurse over the AST to generate code blocks
-		stmts = head->childL->childL;
-		codeGenRec(stmts);
+		modDef = head->childL->childL;
+		codeGenRec(modDef);
+
+		modDef->blk = modDef->childL->blk;
+
+		printCodeBlock(modDef->blk);
 
 		// prepare header
 		codeBlock * header;

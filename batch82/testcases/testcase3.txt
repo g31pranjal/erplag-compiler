@@ -20,6 +20,19 @@ start
 		sum := 1;
 	end
 
+	switch(x)
+	start
+		case 1 : 
+			x := 1;
+			break;
+		case 4 : 
+			x := 2;
+			break;
+		default :
+			x := 3;
+			break;
+	end
+
 	print(sum);
 	print(value);					    
 end

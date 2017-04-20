@@ -38,12 +38,11 @@ int main() {
 		constructAST(head);
 	}
 
-	printParseTreeOrig(head);
-
 	if(!errors) {
 		sHead = initScopeStructure(head, &errors);
 		// printScopeStructure(sHead);
 		checkSemantics(head, sHead, &errors);
+		
 	}
 
 	if(!errors) {

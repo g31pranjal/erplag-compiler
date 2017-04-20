@@ -151,7 +151,7 @@ modified
 
 <declareStmt>			:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
 
-<condionalStmt>			:		<!-- SWITCH BO --> <expression> <!-- BC START --> <caseStmts> <default><!--  END -->
+<condionalStmt>			:		<!-- SWITCH BO --> ID <!-- BC START --> <caseStmts> <default><!--  END -->
 <caseStmts>				:		<!-- CASE --> { <value> <!-- COLON --> <statements> } <!-- BREAK SEMICOL --> <!-- <caseStmtsRec> -->
 <!-- <caseStmtsRec>			:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec> -->
 

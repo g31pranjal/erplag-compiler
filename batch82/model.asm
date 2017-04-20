@@ -22,6 +22,9 @@ section .bss
 	ri20	dw	0
 	ri21	dw	0
 	ri22	dw	0
+	ri23	dw	0
+	ri24	dw	0
+	ri25	dw	0
 
 section .text
 	global _start
