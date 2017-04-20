@@ -148,16 +148,19 @@ int codeGenAssg(treeNode * ptr) {
 
 	if( strcmp(child->next->id->val, "<expression>") == 0 ) {
 		addCodeLine("\t;assignment expression\n", blk);
+	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, %s\n", ptr->childL->se->temporary, child->next->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", child->next->temporary);
 		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->childL->se->temporary);
+		addCodeLine(buffer, blk);
+	
 	}
 	else {
 		// handle array element 
 	}
-
-	printf("child next in assignment --------------------\n");
-	printCodeBlock(child->next->blk);
 
 	mergeCodeBlocks(blk, child->next->blk);
 	ptr->blk = blk;
@@ -198,7 +201,7 @@ int codeGenSwitch(treeNode * ptr) {
 				if(strcmp(cStc->childL->id->val, "NUM") == 0) {
 					addCodeLine("\t; a case begins\n", blk);
 					memset(buffer, 0, 100);
-					sprintf(buffer, "\tcmp %s, %s\n", id->se->temporary, cStc->childL->tptr->val);
+					sprintf(buffer, "\tcmp [%s], dword %s\n", id->se->temporary, cStc->childL->tptr->val);
 					addCodeLine(buffer, blk);
 
 					getLabel();
@@ -210,7 +213,7 @@ int codeGenSwitch(treeNode * ptr) {
 				}
 				else if(strcmp(cStc->childL->id->val, "TRUE") == 0) {
 					memset(buffer, 0, 100);
-					sprintf(buffer, "\tcmp %s, 1\n", id->se->temporary);
+					sprintf(buffer, "\tcmp [%s], dword 1\n", id->se->temporary);
 					addCodeLine(buffer, blk);
 
 					getLabel();
@@ -222,7 +225,7 @@ int codeGenSwitch(treeNode * ptr) {
 				}
 				if(strcmp(cStc->childL->id->val, "FALSE") == 0) {
 					memset(buffer, 0, 100);
-					sprintf(buffer, "\tcmp %s, 0\n", id->se->temporary);
+					sprintf(buffer, "\tcmp [%s], dword 0\n", id->se->temporary);
 					addCodeLine(buffer, blk);
 
 					getLabel();
@@ -291,16 +294,16 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;adding two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax, %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx, %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tadd eax, ebx\n", blk);
 		getTemporary();
 		strcpy(ptr->temporary, TEMP_BUF);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, eax\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\n", blk);
 
@@ -315,16 +318,16 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;substracting two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax, %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx, %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tsub eax, ebx\n", blk);
 		getTemporary();
 		strcpy(ptr->temporary, TEMP_BUF);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, eax\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\n", blk);
 
@@ -339,16 +342,16 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;multiplying two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax, %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx, %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\timul ebx\n", blk);
 		getTemporary();
 		strcpy(ptr->temporary, TEMP_BUF);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, eax\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\n", blk);
 
@@ -363,17 +366,17 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;dividing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax, %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tmov edx, 0\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx, %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tidiv ebx\n", blk);
 		getTemporary();
 		strcpy(ptr->temporary, TEMP_BUF);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, eax\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\n", blk);
 
@@ -388,10 +391,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx\n", blk);
 
@@ -407,7 +410,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -423,7 +426,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -437,10 +440,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx\n", blk);
 
@@ -456,7 +459,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -472,7 +475,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -486,10 +489,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx\n", blk);
 
@@ -505,7 +508,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -521,7 +524,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -535,10 +538,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx\n", blk);
 
@@ -554,7 +557,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -570,7 +573,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -584,10 +587,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx\n", blk);
 
@@ -603,7 +606,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -619,7 +622,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -633,10 +636,10 @@ int codeGenExprRec(treeNode * ptr) {
 
 		addCodeLine("\t;comparing two numbers", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov eax %s\n", ptr->childL->temporary);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
 		addCodeLine(buffer, blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov ebx %s\n", ptr->childR->temporary);
+		sprintf(buffer, "\tmov ebx, [%s]\n", ptr->childR->temporary);
 		addCodeLine(buffer, blk);
 		addCodeLine("\tcmp eax, ebx", blk);
 
@@ -652,7 +655,7 @@ int codeGenExprRec(treeNode * ptr) {
 		
 		// false
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 0\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -668,7 +671,7 @@ int codeGenExprRec(treeNode * ptr) {
 
 		// true	
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, 1\n", ptr->temporary);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -696,7 +699,7 @@ int codeGenExprRec(treeNode * ptr) {
 			getTemporary();
 			strcpy(ptr->temporary, TEMP_BUF);
 			memset(buffer, 0, 100);
-			sprintf(buffer, "\tmov %s, %s\n", ptr->temporary, ptr->childL->tptr->val);
+			sprintf(buffer, "\tmov [%s], dword %s\n", ptr->temporary, ptr->childL->tptr->val);
 			addCodeLine(buffer, blk);
 			addCodeLine("\n", blk);
 
@@ -705,7 +708,7 @@ int codeGenExprRec(treeNode * ptr) {
 			getTemporary();
 			strcpy(ptr->temporary, TEMP_BUF);
 			memset(buffer, 0, 100);
-			sprintf(buffer, "\tmov %s, %s\n", ptr->temporary, ptr->childL->tptr->val);
+			sprintf(buffer, "\tmov [%s], dword %s\n", ptr->temporary, ptr->childL->tptr->val);
 			addCodeLine(buffer, blk);
 			addCodeLine("\n", blk);
 		}
@@ -745,7 +748,7 @@ int codeGenIter(treeNode * ptr) {
 		// code addition for the FOR construct
 		addCodeLine("\t;iterative for loop\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov %s, %d\n", child->next->se->temporary, atoi(child->next->next->childR->tptr->val) - atoi(child->next->next->childL->tptr->val) );
+		sprintf(buffer, "\tmov [%s], dword %d\n", child->next->se->temporary, atoi(child->next->next->childR->tptr->val) - atoi(child->next->next->childL->tptr->val) );
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -765,7 +768,7 @@ int codeGenIter(treeNode * ptr) {
 		}
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tdec %s\n", child->next->se->temporary );
+		sprintf(buffer, "\tdec dword [%s]\n", child->next->se->temporary );
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -801,7 +804,7 @@ int codeGenIter(treeNode * ptr) {
 		blk->bot = eBlk->bot;
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tcmp %s, 0\n", child->next->temporary);
+		sprintf(buffer, "\tcmp [%s], dword 0\n", child->next->temporary);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
@@ -847,7 +850,6 @@ int codeGenStmts(treeNode * ptr) {
 	child = ptr->childR;
 
 	while(child != NULL) {
-		printf("%s %s %s\n", child->id->val, child->parent->id->val, child->parent->parent->id->val);
 		if( strcmp(child->id->val, "<declareStmt>") != 0 )
 			mergeCodeBlocks(blk, child->blk);
 		child = child->prev;
@@ -937,16 +939,15 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 
 		modDef->blk = modDef->childL->blk;
 
-		printCodeBlock(modDef->blk);
-
 		// prepare header
 		codeBlock * header;
 		header = createCodeBlock();
+
 		addCodeLine("\n", header);
 		addCodeLine("section .bss\n", header);
 		for(int i=1;i<TEMP_COUNT;i++) {
 			memset(buffer, 0, 100);
-			sprintf(buffer, "\tri%d\tdw\t0\n", i);
+			sprintf(buffer, "\tri%d : \tresd\t1\n", i);
 			addCodeLine(buffer, header);
 		}
 		addCodeLine("\n", header);
@@ -954,13 +955,17 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 		addCodeLine("\tglobal _start\n", header);
 		addCodeLine("_start : \n", header);
 
-		// printCodeBlock(header);
-		
-		// merge blocks from statements 
-		;
+		mergeCodeBlocks(modDef->childL->blk, header);
 
+		addCodeLine("\n\n;exit code\n" , modDef->childL->blk);
+		addCodeLine("mov eax, 1\n" , modDef->childL->blk);
+		addCodeLine("mov ebx, 0\n" , modDef->childL->blk);
+		addCodeLine("int 80h\n" , modDef->childL->blk);
+
+		// printCodeBlock(header);
+	
 		// dump the entire thing to file
-		printToFile(header, fp);
+		printToFile(modDef->childL->blk, fp);
 
 	}
 }

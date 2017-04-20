@@ -68,6 +68,7 @@ struct se {
 	char temporary[5];
 
 	int offset;
+	int width;
 
 };
 

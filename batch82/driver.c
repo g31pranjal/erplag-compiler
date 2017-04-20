@@ -38,6 +38,7 @@ int main(int argc, char ** argv) {
 		firstAndFollowSets * ff = NULL;
 		parseList * tableHead = NULL;
 		treeNode * head = NULL;
+		symbolScope * sHead = NULL;
 
 		int option, errors, countPT = 0, countAST = 0, ASTconstruct = 0, node_size;
 
@@ -50,8 +51,8 @@ int main(int argc, char ** argv) {
 			printf("3.\tPrint the parse tree.\n");
 			printf("4.\tPrint the Abstract Syntax Tree \n");
 			printf("5.\tDisplay the sizes and compression percentage of the AST\n");
-			
 			printf("6.\tPrint the symbol table.\n");
+			
 			printf("7.\tParse the source code for type checking and semantic correctness.\n");
 			printf("8.\tGenerate assembly code.\n");
 			printf("9.\tExit\n");
@@ -118,9 +119,12 @@ int main(int argc, char ** argv) {
 							countNodes(head, &countPT);		
 						}
 					}
+					if(!ASTconstruct)
+						printParseTreeOrig(head);
+					else {
+						printf("cannot print\n");
+					}
 
-					printParseTreeOrig(gr, head);
-										
 					break;
 
 				case 4 : // construct AST and count AST nodes
@@ -144,13 +148,22 @@ int main(int argc, char ** argv) {
 						constructAST(head);
 						ASTconstruct = 1;
 					}
+
+					printf("The printing format of the AST is the same as that of the parse table. \n");
+					printf("In-order traversal : first child -> parent ->rest of the childs \n");
+					printf("-----------------------------------------------------------------------------------------------------------------------\n");
+					printf("LEXEME\t\tLINE\t\tTERMINAL\tVALUE\t\tPARENT\t\t\tLEAF\t\tNON TERMINAL\n");
+					printf("-----------------------------------------------------------------------------------------------------------------------\n");
+
 					printAST(head);
+
 					if(!countAST) {
 						countAST = 0;
 						countNodes(head, &countAST);		
 					}
 
 					break;
+
 
 				case 5 : // compression calculations
 					if(gr == NULL) {
@@ -171,6 +184,7 @@ int main(int argc, char ** argv) {
 					}
 					if(!ASTconstruct) {
 						constructAST(head);
+						ASTconstruct = 1;
 					}
 					if(!countAST) {
 						countAST = 0;
@@ -184,6 +198,39 @@ int main(int argc, char ** argv) {
 					printf("\nCompression percentage : %f \n" , ((double)countPT-(double)countAST)*100/(double)countPT );
 					break;
 
+				case 6 : // scope
+					if(gr == NULL) {
+						gr = readGrammarFromFile("grammar.txt");
+					}
+					if(ff == NULL) {
+						ff = computeFirstAndFollowSets(gr);
+					}
+					if(tableHead == NULL) {
+						tableHead = createParseTable(gr, ff);
+					}
+					if(head == NULL) {
+						head = parseInputSourceCode(gr, argv[1], tableHead, &errors);
+						if(!countPT) {
+							countPT = 0;
+							countNodes(head, &countPT);		
+						}
+					}
+					if(!ASTconstruct) {
+						constructAST(head);
+						ASTconstruct = 1;
+					}
+					
+					if(errors) {
+						printf("There are errors in the parse table. Cannot construct Symbol table.\n");
+					}
+					else {
+						if(sHead == NULL) {
+							sHead = initScopeStructure(head, &errors);
+						}
+						printScopeStructure(sHead);
+					}
+
+					break;
 
 
 				// case 5 : 

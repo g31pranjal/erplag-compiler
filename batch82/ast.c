@@ -221,7 +221,7 @@ int printAST(treeNode * head)  {
 	if(child != NULL) {
 		while(child != NULL) {
 
-			printParseTreeOrig(child);
+			printAST(child);
 			if(first == 0) {
 				// printing a non terminal 
 				// printf("node : %x\n", head);

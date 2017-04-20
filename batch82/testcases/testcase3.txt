@@ -1,38 +1,21 @@
-** Test case c1.txt: Handles simple expressions**
+
+<<module square>>
+takes input [x:integer];
+returns [value:integer];
+start
+	value := x*x;
+	[value] := use module square with parameters value;
+end
+
 
 <<<driver program>>>
 start
-	declare x,y, z:integer; 
-	get_value(x);
-	get_value(y);
-	declare sum, value:integer;
-	z:= 19;
-	sum:= x*20-y*4+17-z;
-	value:= sum + z*2 - x*y;
-
-	for ( x in 1..10 )
-	start 
-		sum := 1;
-	end
-
-	while(x < y) 
-	start 
-		sum := 1;
-	end
-
-	switch(x)
-	start
-		case 1 : 
-			x := 1;
-			break;
-		case 4 : 
-			x := 2;
-			break;
-		default :
-			x := 3;
-			break;
-	end
-
-	print(sum);
-	print(value);					    
+	declare v_1_2_3:integer;
+	get_value(v_1_2_3);
+	declare result_:integer;
+	[result_]:=use module square with parameters v_1_2_3;
+	print(result);
 end
+
+**notice that this test case does not declare the module before the driver module, still it is syntactically correct
+as moduleDeclarations is optional. Testing whether a module is declared before usage is a matter of semantic analysis**

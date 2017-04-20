@@ -7,6 +7,11 @@ int OFFSET = 0;
 symbolScope * stackScope(symbolScope * parent, char * st) {
 	symbolScope * newScope;
 	newScope = (symbolScope *)malloc(sizeof(symbolScope));
+
+	if(parent != NULL && parent->parent == NULL) {
+		// global scope
+		OFFSET = 0;
+	}
 	
 	newScope->parent = newScope->childL = newScope->childR = newScope->next = newScope->prev = NULL;
 	newScope->seHead = NULL;
@@ -88,18 +93,26 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 		newEntry->startInd = s;
 		newEntry->endInd = e;
 		newEntry->lineInit = line;
+		newEntry->scope = scope;
 
 		if(scope->parent != NULL) {
 			newEntry->offset = OFFSET;
-			if( strcmp(type, "INTEGER") == 0 )
+			if( strcmp(type, "INTEGER") == 0 ){
 				OFFSET += (e-s+1)*2;
-			else if( strcmp(type, "REAL") == 0 )
+				newEntry->width = (e-s+1)*2;
+			}
+			else if( strcmp(type, "REAL") == 0 ){
 				OFFSET += (e-s+1)*4;
-			else if( strcmp(type, "BOOLEAN") == 0 )
+				newEntry->width = (e-s+1)*4;
+			}
+			else if( strcmp(type, "BOOLEAN") == 0 ) {
 				OFFSET += (e-s+1)*1;
+				newEntry->width = (e-s+1)*1;
+			}
 		}
 		else {
 			newEntry->offset = -1;
+			newEntry->width = -1;
 		}
 
 		memset(newEntry->linesUsed, 0, sizeof(newEntry->linesUsed));
@@ -116,11 +129,12 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 
 int printScopeStructure(symbolScope * head) {
 	
-	symbolScope * child;
+	symbolScope * child, * deep;
 	symbolEntry * seHead;
+	int depth;
 
 	printf("\nSCOPE TABLE");
-	printf("--------------------------------------------\n");
+	printf("---------------------------------------------------------------------------------------------------------------------------\n");
 
 	printf("stmp : %s ", head->stamp);
 	if(head->parent != NULL) 
@@ -129,10 +143,39 @@ int printScopeStructure(symbolScope * head) {
 
 	seHead = head->seHead;
 
+	char * usg[] = {"", "variable", "defined module", "input parameter", "output parameter", "declared module", "defined module"};
+
+
+
+	// while(seHead != NULL) {
+	// 	printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d, OFFSET : %d, TEMP : %s\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit, seHead->offset, seHead->temporary );
+	// 	seHead = seHead->next;
+	// }	
+
 	while(seHead != NULL) {
-		printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d, OFFSET : %d, TEMP : %s\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit, seHead->offset, seHead->temporary );
+
+		deep = seHead->scope;
+		depth = 0;
+
+		while(deep != NULL) {
+			depth++;
+			deep = deep->parent;
+		}
+
+		// identifier - usage - type - line declared - depth - width - offset
+		
+		if(seHead->isArray == 1) {
+			printf("%s \t\t %s \t\t Array(%d, %s) \t\t %d \t\t %d \t\t %d \t\t , OFFSET : %d\n", seHead->identifier, usg[seHead->usage], seHead->endInd - seHead->startInd, seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
+		}
+		else {
+			printf("%s \t\t %s \t\t %s \t\t %d \t\t %d \t\t %d \t\t, OFFSET : %d\n", seHead->identifier, usg[seHead->usage], seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
+		}
+
+
+
+
 		seHead = seHead->next;
-	}	
+	}
 
 	child = head->childL;
 	while(child != NULL) {
@@ -233,7 +276,7 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 			else {
 				// non terminal 
 
-				if (( strcmp(child->id->val, "<condionalStmt>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
+				if (( strcmp(child->id->val, "<statements>") == 0 && strcmp(child->parent->id->val, "<caseStmts>") == 0 ) || (strcmp(child->id->val, "<module>") == 0 ) || (strcmp(child->id->val, "<driverModule>") == 0 )  || (strcmp(child->id->val, "<iterativeStmt>") == 0 )  ) {
 
 					if( strcmp(child->id->val, "<module>") == 0 ){
 						newScope = stackScope(scope, child->childL->tptr->val);
