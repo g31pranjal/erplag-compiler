@@ -228,6 +228,7 @@ int main(int argc, char ** argv) {
 							sHead = initScopeStructure(head, &errors);
 						}
 
+						printf("\n\n");
 						printf("IDENTIFIER \t\t USAGE \t\t TYPE \t\t LINE NO. \t\t SCOPE LEVEL \t\t WIDTH \t\t OFFSET\n");
 						printf("----------------------------------------------------------------------------------------------------------------\n\n");
 

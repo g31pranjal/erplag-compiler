@@ -74,7 +74,11 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 				return sStack;
 			}
 			else {
-				printf("%sERROR : %s(scope resolution)%s The identifier '%s' at line %d cannot be declared multiple times in the same scope.\n", BOLDRED, BOLDYELLOW, RESET, identifier, line);
+				if(scope-> parent != NULL) 
+					printf("%sERROR : %s(scope resolution)%s The identifier '%s' at line %d cannot be declared multiple times in the same scope.\n", BOLDRED, BOLDYELLOW, RESET, identifier, line);
+				else
+					printf("%sERROR : %s(scope resolution)%s Module overloading for module '%s' at line %d is not supported.\n", BOLDRED, BOLDYELLOW, RESET, identifier, line);
+
 				return NULL;
 			}
 		}
@@ -133,19 +137,17 @@ int printScopeStructure(symbolScope * head) {
 	symbolEntry * seHead;
 	int depth;
 
-	printf("\nSCOPE TABLE");
-	printf("---------------------------------------------------------------------------------------------------------------------------\n");
+	// printf("\nSCOPE TABLE");
+	// printf("---------------------------------------------------------------------------------------------------------------------------\n");
 
-	printf("stmp : %s ", head->stamp);
-	if(head->parent != NULL) 
-		printf(" prt stmp : %s", head->parent->stamp);
-	printf("\n\n");
+	// printf("stmp : %s ", head->stamp);
+	// if(head->parent != NULL) 
+	// 	printf(" prt stmp : %s", head->parent->stamp);
+	// printf("\n\n");
 
 	seHead = head->seHead;
 
 	char * usg[] = {"", "variable", "defined module", "input parameter", "output parameter", "declared module", "defined module"};
-
-
 
 	// while(seHead != NULL) {
 	// 	printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d, OFFSET : %d, TEMP : %s\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit, seHead->offset, seHead->temporary );
@@ -170,9 +172,6 @@ int printScopeStructure(symbolScope * head) {
 		else {
 			printf("%s \t\t %s \t\t %s \t\t %d \t\t %d \t\t %d \t\t %d\n", seHead->identifier, usg[seHead->usage], seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
 		}
-
-
-
 
 		seHead = seHead->next;
 	}

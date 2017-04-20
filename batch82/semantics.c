@@ -251,6 +251,84 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 }
 
 
+int checkOutputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idr, int lno, int * errors) {
+
+	printf("output check\n");
+
+	char *mName;
+	symbolScope *childScope, *mScope;
+	symbolEntry *se, * prmtrS;
+
+	mName = invokedModule->identifier;
+	childScope = scopeRoot->childL;
+
+	while(childScope != NULL) {
+		if( strcmp(mName, childScope->stamp) == 0 ) {
+			mScope = childScope;
+		}
+		childScope = childScope->next;
+	}
+
+	se = mScope->seHead;
+
+	if(idr == NULL) {
+		
+		while(se != NULL) {
+			if(se->usage == 4) {
+				printf("%sERROR : %s(semantics)%s The invoked module has returned parameters which needs to be assigned at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+				*errors = 1;
+				break;
+			}
+			se = se->next;
+		}
+
+	}
+	else {
+		// parameters are there
+		idr = idr->childR;
+
+		while(idr != NULL && se != NULL) {
+
+			prmtrS = idr->se;
+
+			// printf("getting here\n");
+			// printf("%s %s\n", se->identifier, prmtrS->identifier);
+
+			if(prmtrS != NULL) {
+				if(se->usage == 4) {
+					// printf("valid\n");
+					// printf("%s\n", prmtrS->type);
+				
+					if( ! ( strcmp(prmtrS->type, se->type) == 0 && prmtrS->isArray == se->isArray && prmtrS->startInd == se->startInd && prmtrS->endInd == se->endInd ) ) {
+						printf("%sERROR : %s(semantics)%s The parameters returned by the module is not matching the set of parameters used to invoke the function at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+						*errors = 1;
+						break;
+					}
+					else {
+						se = se->next;
+						idr = idr->prev;
+						// printf("consumed one\n");
+					}
+				}
+				else {
+					se = se->next;
+					continue;
+				}
+			}
+			else {
+				// printf("error in AST.\n");
+				break;
+			}
+		}
+
+		if( idr != NULL || (se != NULL && se->usage == 4) ) {
+			printf("%sERROR : %s(semantics)%s number of parameters returned by the module differs at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+			*errors = 1;
+		}
+	}
+
+}
+
 
 int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 
@@ -294,6 +372,7 @@ int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 		else {
 
 			checkInputParameters(idref->se, sHead, idl, idref->tptr->lno, errors);
+			checkOutputParameters(idref->se, sHead, idr, idref->tptr->lno, errors);
 	
 		}
 	}
