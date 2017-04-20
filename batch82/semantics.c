@@ -1,4 +1,7 @@
+#include <stdio.h>
+#include "parserDef.h"
 #include "scopeDef.h"
+#include "scope.h"
 
 
 int checkArrayCases(treeNode * idref, int * errors) {
@@ -164,36 +167,12 @@ int switchSemantics(treeNode * swt, int * errors) {
 }
 
 
-symbolScope * resolveCurrentModule(symbolScope * currScope) {
-
-	char * stamp;
-	symbolEntry * se;
-
-	while(currScope->parent != NULL) {
-		stamp = currScope->stamp;
-		currScope = currScope->parent;
-	}
-
-	if( strcmp(stamp, "<driverModule>") == 0 )
-		return NULL;
-	else {
-		se = currScope->seHead;
-
-		while(se != NULL) {
-			if( strcmp(se->identifier, stamp) == 0 )
-				return se;
-			se = se->next;
-		}
-	}
-
-	return NULL;
-}
-
 int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idl, int lno, int * errors) {
 
 	char *mName;
 	symbolScope *childScope, *mScope;
 	symbolEntry *se, * prmtrS;
+	int errorLoc = 0;
 
 	mName = invokedModule->identifier;
 	childScope = scopeRoot->childL;
@@ -222,6 +201,7 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 			
 				if( ! ( strcmp(prmtrS->type, se->type) == 0 && prmtrS->isArray == se->isArray && prmtrS->startInd == se->startInd && prmtrS->endInd == se->endInd ) ) {
 					printf("%sERROR : %s(semantics)%s actual and formal parameters are not matching at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+					errorLoc = 1;
 					*errors = 1;
 					break;
 				}
@@ -243,7 +223,7 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 		}
 	}
 
-	if(idl != NULL || se != NULL ) {
+	if( !errorLoc && ( idl != NULL || se != NULL ) ) {
 		printf("%sERROR : %s(semantics)%s number of parameters passed to the module differs at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
 		*errors = 1;
 	}
@@ -253,11 +233,10 @@ int checkInputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, t
 
 int checkOutputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, treeNode * idr, int lno, int * errors) {
 
-	printf("output check\n");
-
-	char *mName;
+	char *mName;	
 	symbolScope *childScope, *mScope;
 	symbolEntry *se, * prmtrS;
+	int errorLoc = 0;
 
 	mName = invokedModule->identifier;
 	childScope = scopeRoot->childL;
@@ -275,8 +254,9 @@ int checkOutputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, 
 		
 		while(se != NULL) {
 			if(se->usage == 4) {
-				printf("%sERROR : %s(semantics)%s The invoked module has returned parameters which needs to be assigned at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
+				printf("%sERROR : %s(semantics)%s The invoked module has return parameters which needs to be assigned at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
 				*errors = 1;
+				errorLoc = 1;
 				break;
 			}
 			se = se->next;
@@ -302,6 +282,7 @@ int checkOutputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, 
 					if( ! ( strcmp(prmtrS->type, se->type) == 0 && prmtrS->isArray == se->isArray && prmtrS->startInd == se->startInd && prmtrS->endInd == se->endInd ) ) {
 						printf("%sERROR : %s(semantics)%s The parameters returned by the module is not matching the set of parameters used to invoke the function at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
 						*errors = 1;
+						errorLoc = 1;
 						break;
 					}
 					else {
@@ -321,7 +302,7 @@ int checkOutputParameters(symbolEntry * invokedModule, symbolScope * scopeRoot, 
 			}
 		}
 
-		if( idr != NULL || (se != NULL && se->usage == 4) ) {
+		if( !errorLoc && (idr != NULL || (se != NULL && se->usage == 4) ) ) {
 			printf("%sERROR : %s(semantics)%s number of parameters returned by the module differs at line %d\n", BOLDRED, BOLDBLUE, RESET, lno);
 			*errors = 1;
 		}
@@ -363,11 +344,9 @@ int callingModule(treeNode * callMod, symbolScope * sHead, int * errors) {
 			printf("%sERROR : %s(semantics)%s The module '%s' refernced at line %d is not defined and only declared\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
 			*errors = 1;
 		}
-		else if(invokedModule->usage == 2) {
-			if(idref->tptr->lno < invokedModule->lineInit) {
-				printf("%sERROR : %s(semantics)%s The module '%s' refernced at line %d must be declared before referencing.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
-				*errors = 1;			
-			}
+		else if(invokedModule->usage == 2 && idref->tptr->lno < invokedModule->lineInit) {
+			printf("%sERROR : %s(semantics)%s The module '%s' refernced at line %d must be declared before referencing.\n", BOLDRED, BOLDBLUE, RESET, idref->tptr->val, idref->tptr->lno);
+			*errors = 1;			
 		}
 		else {
 

@@ -15,12 +15,12 @@ end
 <<< driver program >>>
 start
 	declare num, k:integer;
-	declare A:array [1..10] of integer;
+	declare A:array [1..20] of real;
 	for( k in 1..10)
 	start
 		A[k]:=(num - k)*(num-k);
 		print(A[k]);
 	end
-	[num]:=use module arraysum with parameters A;
+	[num]:=use module arraysum with parameters A, A;
 	print(num);
 end

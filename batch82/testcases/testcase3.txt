@@ -1,59 +1,34 @@
-** Test case t3.txt: Module semantics**
+** Test case t1.txt: Variable declarations, Nesting level 1 scope and type checking **
+** in arithmetic and boolean expressions and in assignment statements**
 
-declare module fun1;
-declare module fun2;
-<<module fun3>>
-takes input [d:real, s: boolean];				**The fun3 does not return value**
+<<module arraySum>>
+takes input[list:array[1..15] of real, n:integer];		    **scope: Nesting level 1; module: arraySum; lines: 7 to 24**
+returns  [sum:real];						    **scope: Nesting level 1; module: arraySum; lines: 7 to 24 **
 start
-	declare q:real;
-	q:= d*20.5+ q/2.0;						
+	declare index, a, b, x:integer;				    **scope: Nesting level 1; module: arraySum; lines: 7 to 24 **
+	declare t:boolean;					    **scope: Nesting level 1; module: arraySum; lines: 7 to 24 **
+	declare q,r,p: array[1..10] of real;		    	    **scope: Nesting level 1; module: arraySum; lines: 7 to 24**
+	declare u,v: boolean;				   	    **scope: Nesting level 1; module: arraySum; lines: 7 to 24 **
+	sum:=0.0;						    **No type mismatch**
+	while(sum>=12.8)					    **No type mismatch**
+        start
+		index:= 34-20*index+x-12;			    **ERROR_V: variable x not declared **
+		r[b] := p[index]+q[a];			            **No type mismatch**
+		r[index]:= p[index] + list[a];		            **ERROR_T: type mismatch of elements belonging to two different types of arrays**
+                list[b]:=list[a]+ 22.3; 			    **No type mismatch**
+		t:= list[a]+34.5<=40.0;      	    	            **No type mismatch**
+	end
+	declare u, v, w, z: integer;			            **ERROR_V: variables u and v are already declared **
+	w:= index*10+sum-list[a];				    **ERROR_T: type mismatch **
+	print(x_2); 						    **ERROR_V: x_2 is not declared in the current scope**
 end
-<<module mod1>>
-takes input [a:integer, b:integer];
-start
-	declare x : integer;
-	declare c, abc:real;
-	declare t: boolean;
-	c:=10.4;
-	[x,c,t] := use module fun1 with parameters b, c, t;    		**ERROR_M: Input parameters numbers mismatch**
-	x:=a+b-10;
-end									**ERROR_M: The output parameter abc does not get assigned a value**
 <<<driver program>>>
 start
-	declare v, w, r :integer;
-	declare s: boolean;
-	get_value(v);
-	w:=22;
-	declare m:real;
-	[r,m,s] := use module fun1 with parameters v, w,s, m;    	**ERROR_M: Input parameters types mismatch**
-	print(r);
-	[v,m] := use module mod1 with parameters v, w;    		**ERROR_M: Module mod1 not known**	
-	print(m);
+	declare A:array[1..15] of real;                            **scope: Nesting level 1; module: driver; lines: 26 to 34 **
+	declare k:integer;					   **scope: Nesting level 1; module: driver; lines: 26 to 34 **
+	declare s:real;						   **scope: Nesting level 1; module: driver; lines: 26 to 34 **
+	get_value(k);
+	u1:= 23.9+s;						   **ERROR_V: variable u1 not declared**
+	k := 10+12-3;					           **No type mismatch**
+	s:=k;							   **ERROR_T: type mismatch **
 end
-
-<<module fun1>>
-takes input [a:integer, b:integer, c:real, d: boolean];
-returns [result:integer, value:real, flag: boolean];
-start
-	declare p:real;
-	result:=10.4+p;
-	[a] := use module fun3 with parameters c, d;    		**ERROR_M: Output parameters numbers mismatch or improper usage of the function returning no value**	
-	value:=a+b-10;
-	use module fun2 with parameters b, c, d;    		**ERROR_M: Output parameters numbers mismatch**
-	flag:=c*2+12.8>=10.0;
-	[flag,c] := use module fun2 with parameters b, c, d;    	**ERROR_M: Output parameters types mismatch**
-end
-
-<<module fun2>>
-takes input [b1:integer, c1:real, d1: boolean];
-returns [result1:integer, new:real];
-start
-	declare q:integer;
-	result1:= q-10;						** No Error: output parameter result1 assigned a value**
-	value:=a+b-10;
-	use module fun3 with parameters c1, d1;    			**No error : proper usage of the function returning no value**	
-	d1:=c*2+12.8>=10.0;
-end								**ERROR_M: The output parameter new does not get assigned a value**
-
-
-

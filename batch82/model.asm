@@ -23,14 +23,6 @@ section .bss
 	ri21 : 	resd	1
 	ri22 : 	resd	1
 	ri23 : 	resd	1
-	ri24 : 	resd	1
-	ri25 : 	resd	1
-	ri26 : 	resd	1
-	ri27 : 	resd	1
-	ri28 : 	resd	1
-	ri29 : 	resd	1
-	ri30 : 	resd	1
-	ri31 : 	resd	1
 
 section .text
 	global _start
@@ -47,151 +39,92 @@ _start :
 	mov	ebx, 2
 	mov	ecx, 1
 	int	80h
-	mov [ri8], dword 19
+	mov [ri9], dword 19
 
 	;assignment expression
-	mov eax, [ri8]
-	mov [ri5], eax
-	mov [ri13], dword 17
+	mov eax, [ri9]
+	mov [ri6], eax
+	mov eax, [ri4]
+	cmp eax, 1
+	jne label1
+	mov eax, [ri5]
+	cmp eax, 1
+	jne label1
+	mov [ri10], dword 1
+	jmp label2
+label2 :
+	mov [ri10], dword 0
+	;assignment expression
+	mov eax, [ri10]
+	mov [ri3], eax
+	mov [ri15], dword 17
 
 	;substracting two numbers
-	mov eax, [ri13]
-	mov ebx, [ri5]
+	mov eax, [ri15]
+	mov ebx, [ri6]
 	sub eax, ebx
-	mov [ri14], eax
+	mov [ri16], eax
 
-	mov [ri11], dword 4
+	mov [ri13], dword 4
 
 	;multiplying two numbers
-	mov eax, [ri6]
+	mov eax, [ri7]
+	mov ebx, [ri13]
+	imul ebx
+	mov [ri14], eax
+
+	;adding two numbers
+	mov eax, [ri14]
+	mov ebx, [ri16]
+	add eax, ebx
+	mov [ri17], eax
+
+	mov [ri11], dword 20
+
+	;multiplying two numbers
+	mov eax, [ri8]
 	mov ebx, [ri11]
 	imul ebx
 	mov [ri12], eax
 
-	;adding two numbers
+	;substracting two numbers
 	mov eax, [ri12]
-	mov ebx, [ri14]
-	add eax, ebx
-	mov [ri15], eax
-
-	mov [ri9], dword 20
-
-	;multiplying two numbers
-	mov eax, [ri7]
-	mov ebx, [ri9]
-	imul ebx
-	mov [ri10], eax
-
-	;substracting two numbers
-	mov eax, [ri10]
-	mov ebx, [ri15]
-	sub eax, ebx
-	mov [ri16], eax
-
-	;assignment expression
-	mov eax, [ri16]
-	mov [ri3], eax
-	;assignment expression
-	mov eax, []
-	mov [ri4], eax
-label2 :
-	cmp [ri4], dword 1
-	jne label3
-	mov [ri20], dword 5
-
-	;multiplying two numbers
-	mov eax, [ri7]
-	mov ebx, [ri6]
-	imul ebx
-	mov [ri19], eax
-
-	;substracting two numbers
-	mov eax, [ri19]
-	mov ebx, [ri20]
-	sub eax, ebx
-	mov [ri21], eax
-
-	mov [ri17], dword 2
-
-	;multiplying two numbers
-	mov eax, [ri5]
 	mov ebx, [ri17]
-	imul ebx
+	sub eax, ebx
 	mov [ri18], eax
 
-	;substracting two numbers
+	;assignment expression
 	mov eax, [ri18]
+	mov [ri2], eax
+	;multiplying two numbers
+	mov eax, [ri8]
+	mov ebx, [ri7]
+	imul ebx
+	mov [ri21], eax
+
+	mov [ri19], dword 2
+
+	;multiplying two numbers
+	mov eax, [ri6]
+	mov ebx, [ri19]
+	imul ebx
+	mov [ri20], eax
+
+	;substracting two numbers
+	mov eax, [ri20]
 	mov ebx, [ri21]
 	sub eax, ebx
 	mov [ri22], eax
 
 	;adding two numbers
-	mov eax, [ri3]
+	mov eax, [ri2]
 	mov ebx, [ri22]
 	add eax, ebx
 	mov [ri23], eax
 
 	;assignment expression
 	mov eax, [ri23]
-	mov [ri2], eax
-	mov [ri24], dword 100
-
-	;assignment expression
-	mov eax, [ri24]
 	mov [ri1], eax
-	;a block of statements
-	jmp label1
-
-label3 :
-	cmp [ri4], dword 0
-	jne label4
-	mov [ri28], dword 20
-
-	;multiplying two numbers
-	mov eax, [ri7]
-	mov ebx, [ri6]
-	imul ebx
-	mov [ri27], eax
-
-	;substracting two numbers
-	mov eax, [ri27]
-	mov ebx, [ri28]
-	sub eax, ebx
-	mov [ri29], eax
-
-	mov [ri25], dword 3
-
-	;multiplying two numbers
-	mov eax, [ri5]
-	mov ebx, [ri25]
-	imul ebx
-	mov [ri26], eax
-
-	;substracting two numbers
-	mov eax, [ri26]
-	mov ebx, [ri29]
-	sub eax, ebx
-	mov [ri30], eax
-
-	;assignment expression
-	mov eax, [ri30]
-	mov [ri2], eax
-	mov [ri31], dword 200
-
-	;assignment expression
-	mov eax, [ri31]
-	mov [ri1], eax
-	;a block of statements
-	jmp label1
-
-label4 :
-label1 :
-	; printing a value
-	mov	edx, 4
-	mov	eax, 4
-	mov	ebx, 1
-	mov	ecx, 1
-	int	80h
 	; printing a value
 	mov	edx, 4
 	mov	eax, 4

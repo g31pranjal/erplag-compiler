@@ -16,7 +16,7 @@ symbolScope * stackScope(symbolScope * parent, char * st) {
 	newScope->parent = newScope->childL = newScope->childR = newScope->next = newScope->prev = NULL;
 	newScope->seHead = NULL;
 
-	memset(newScope->stamp, 0, sizeof(newScope->stamp));
+	memset(newScope->stamp, 0, 25);
 	strcpy(newScope->stamp, st);
 
 	if(parent != NULL) {
@@ -130,10 +130,39 @@ int addSymbolEntry(char * identifier, int usage, char * type, int isArray, int s
 }
 
 
+symbolScope * resolveCurrentModule(symbolScope * currScope) {
+
+	char * stamp;
+	symbolEntry * se;
+
+	while(currScope->parent != NULL) {
+		stamp = currScope->stamp;
+		currScope = currScope->parent;
+	}
+
+
+	if( strcmp(stamp, "<driverModule>") == 0 )
+		return NULL;
+	else {
+		se = currScope->seHead;
+
+		while(se != NULL) {
+			if( strcmp(se->identifier, stamp) == 0 )
+				return se;
+			se = se->next;
+		}
+	}
+
+	return NULL;
+}
+
+
+
+
 
 int printScopeStructure(symbolScope * head) {
 	
-	symbolScope * child, * deep;
+	symbolScope * child, * deep, * curr;
 	symbolEntry * seHead;
 	int depth;
 
@@ -147,7 +176,9 @@ int printScopeStructure(symbolScope * head) {
 
 	seHead = head->seHead;
 
-	char * usg[] = {"", "variable", "defined module", "input parameter", "output parameter", "declared module", "defined module"};
+	char * usg[] = {"", "   variable", "defined module", "input  parameter", "output parameter", "declared module", "defined module"};
+	char mName[25];
+	memset(mName, 0, 25);
 
 	// while(seHead != NULL) {
 	// 	printf("ID : %s, US : %d, BASE : %s, AR : %d, SI : %d, EI : %d, LINE : %d, OFFSET : %d, TEMP : %s\n", seHead->identifier, seHead->usage, seHead->type, seHead->isArray, seHead->startInd, seHead->endInd, seHead->lineInit, seHead->offset, seHead->temporary );
@@ -159,18 +190,19 @@ int printScopeStructure(symbolScope * head) {
 		deep = seHead->scope;
 		depth = 0;
 
-		while(deep != NULL) {
+		while(deep->parent != NULL) {
 			depth++;
+			strcpy(mName, deep->stamp);
 			deep = deep->parent;
 		}
 
 		// identifier - usage - type - line declared - depth - width - offset
 		
 		if(seHead->isArray == 1) {
-			printf("%s \t\t %s \t\t Array(%d, %s) \t\t %d \t\t %d \t\t %d \t\t %d\n", seHead->identifier, usg[seHead->usage], seHead->endInd - seHead->startInd, seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
+			printf("%s\t\t%s\t\tArray(%d, %s)\t\t%d\t\t%s\t\t%d\t\t%d\t\t%d\n", seHead->identifier, usg[seHead->usage], seHead->endInd - seHead->startInd, seHead->type, seHead->lineInit, mName, depth, seHead->width, seHead->offset );
 		}
 		else {
-			printf("%s \t\t %s \t\t %s \t\t %d \t\t %d \t\t %d \t\t %d\n", seHead->identifier, usg[seHead->usage], seHead->type, seHead->lineInit, depth, seHead->width, seHead->offset );
+			printf("%s\t\t%s\t\t  %s  \t\t%d\t\t%s\t\t%d\t\t%d\t\t%d\n", seHead->identifier, usg[seHead->usage], seHead->type, seHead->lineInit, mName, depth, seHead->width, seHead->offset );
 		}
 
 		seHead = seHead->next;
@@ -296,3 +328,5 @@ int iterOverScope(treeNode * head, symbolScope * scope, int * errors) {
 		}
 	}
 }
+
+

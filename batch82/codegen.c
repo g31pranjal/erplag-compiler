@@ -6,6 +6,7 @@
 
 #include "codegenDef.h"
 
+
 int LABEL = 1;
 int TEMP_COUNT = 1;
 
@@ -258,9 +259,7 @@ int codeGenSwitch(treeNode * ptr) {
 				cStc = cStc->next;
 			}
 
-			memset(buffer, 0, 100);
-			sprintf(buffer, "%s :\n", lf);
-			addCodeLine(buffer, blk);
+			
 		} 
 	}
 	else {
@@ -273,6 +272,10 @@ int codeGenSwitch(treeNode * ptr) {
 		blk->bot->next = dBlk->top;
 		blk->bot = dBlk->bot;
 	}
+
+	memset(buffer, 0, 100);
+	sprintf(buffer, "%s :\n", lf);
+	addCodeLine(buffer, blk);
 
 	ptr->blk = blk;
 }
@@ -432,6 +435,10 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "LT") == 0 ) {
 
@@ -481,6 +488,10 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "GE") == 0 ) {
 
@@ -530,6 +541,10 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "GT") == 0 ) {
 
@@ -579,6 +594,10 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "NE") == 0 ) {
 
@@ -628,6 +647,10 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "EQ") == 0 ) {
 
@@ -677,13 +700,135 @@ int codeGenExprRec(treeNode * ptr) {
 		memset(buffer, 0, 100);
 		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "AND") == 0 ) {	
 		// logic for handling AND
 
+		//compare op1 with 1 
+		//if false jmp to l1
+		//compare op2 with 1
+		//if false jmp to l1
+		//set 1
+		//jump to l2
+		//l1 : set 0
+
+		codeGenExprRec(ptr->childL);
+		codeGenExprRec(ptr->childR);
+
+		getLabel();
+		strcpy(tmpl1, LABEL_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
+		addCodeLine(buffer, blk);
+
+		addCodeLine("\tcmp eax, 1\n", blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tjne %s\n", tmpl1);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childR->temporary);
+		addCodeLine(buffer, blk);
+
+		addCodeLine("\tcmp eax, 1\n", blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tjne %s\n", tmpl1);
+		addCodeLine(buffer, blk);
+
+		getTemporary();
+		strcpy(ptr->temporary, TEMP_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
+		addCodeLine(buffer, blk);
+
+		getLabel();
+		strcpy(tmpl2, LABEL_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tjmp %s\n", tmpl2);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "%s :\n", tmpl2);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
+		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
 	}
 	else if( strcmp(ptr->id->val, "OR") == 0 ) {
 		// logic for handling OR
+
+		// compare op1 with 1 
+		// if true jmp to l1
+		// compare op2 with 1
+		// if true jmp to l1
+		// set 0
+		// jump to l2
+		// l1 : set 1
+
+		codeGenExprRec(ptr->childL);
+		codeGenExprRec(ptr->childR);
+
+		getLabel();
+		strcpy(tmpl1, LABEL_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childL->temporary);
+		addCodeLine(buffer, blk);
+
+		addCodeLine("\tcmp eax, 1\n", blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tje %s\n", tmpl1);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childR->temporary);
+		addCodeLine(buffer, blk);
+
+		addCodeLine("\tcmp eax, 1\n", blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tje %s\n", tmpl1);
+		addCodeLine(buffer, blk);
+
+		getTemporary();
+		strcpy(ptr->temporary, TEMP_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
+		addCodeLine(buffer, blk);
+
+		getLabel();
+		strcpy(tmpl2, LABEL_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tjmp %s\n", tmpl2);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "%s :\n", tmpl2);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], dword 1\n", ptr->temporary);
+		addCodeLine(buffer, blk);
+
+		mergeCodeBlocks(blk, ptr->childL->blk);
+		mergeCodeBlocks(blk, ptr->childR->blk);
 	
 	}
 	else if( strcmp(ptr->id->val, "<var>") == 0 ) {
@@ -923,7 +1068,7 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 
 	// checking the validity
 	if( head->childL != head->childR ) {
-		// error. we are considering only the case with driver function
+		printf("\nCannot handle such types of source code for generating ASM.\n");
 	}
 	else {
 
@@ -931,8 +1076,6 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 		// map variables to temporaries 
 		addTemporaries(sHead->childL);
 		
-		printScopeStructure(sHead);
-
 		// recurse over the AST to generate code blocks
 		modDef = head->childL->childL;
 		codeGenRec(modDef);
