@@ -9,23 +9,23 @@ Tanaya Jha (2013B3A7304P)
 #include <stdio.h>
 #include "lexerDef.h"
 #include "parserDef.h"
+
+#include "lexer.h"
 #include "parser.h"
 #include "ast.h"
-#include "lexer.h"
-
+#include "scope.h"
+#include "semantics.h"
+#include "codegen.h"
 
 
 int main(int argc, char ** argv) {
 
 	printf("\n");
 
+	printf("LEVEL 4 : AST / Symbol table / Type checking / Semantic analysis / ASM code generation \n\n");
+	
 	printf("(a). Lexical Analysis module is fully developed with Error reporting \n");
-	printf("(b). Buffer Pair technique is implemented in lexical analysis\n");
-	printf("(c). Syntacitic Analysis module is fully developed with error reporting and recovery using panic mode \n");
-	printf("(d). Loading of grammer is automated to read from file \n");
-	printf("(e). First and Follow set computation has been automated.\n");
-	printf("(f). Both the modules works with all the provided testcases.\n");
-	printf("(g). Parse tree construction can be done and printed using option 4 in the given format \n");
+
 
 	printf("\n");
 

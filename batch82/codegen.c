@@ -1,3 +1,11 @@
+/*
+Batch no. 82
+
+AUTHORS : 
+Pranjal Gupta (2013B4A7470P)
+Tanaya Jha (2013B3A7304P)
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -91,24 +99,25 @@ int printToFile(codeBlock * blk, FILE * fp) {
 int codeGenIO(treeNode * ptr) {
 
 	codeBlock * blk;
+	treeNode * var;
 	
 	if( strcmp(ptr->childL->id->val, "GET_VALUE") == 0 ) {
 		
 		blk = createCodeBlock();
 
 		addCodeLine("\t; getting a value into a variable\n", blk);
-		// message length, all messages are 4 bytes (word)
-		addCodeLine("\tmov\tedx, 4\n", blk); 
-		// file descriptor (stdout)
-		addCodeLine("\tmov\teax, 3\n", blk);
-		// system call number 
-		addCodeLine("\tmov\tebx, 2\n", blk); 
+		// setup stack frame 
+		addCodeLine("\tpush rbp\n", blk); 
+		// move printing format
+		addCodeLine("\tmov rdi, s_fmt\n", blk);
+		addCodeLine("\tmov rax, 0\n", blk);
+		
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov rsi, %s\n", ptr->childL->next->se->temporary);
+		addCodeLine(buffer, blk);
 
-		// *********************************** THIS HAS TO BE WORKED OUT ******************************************
-		// message to write is copied to register ecx 
-		addCodeLine("\tmov\tecx, 1\n", blk); 
-
-		addCodeLine("\tint\t80h\n", blk);
+		addCodeLine("\tcall scanf\n", blk);
+		addCodeLine("\tpop rbp\n", blk);
 
 	}
 	else if( strcmp(ptr->childL->id->val, "PRINT") == 0 ) {
@@ -116,18 +125,38 @@ int codeGenIO(treeNode * ptr) {
 		blk = createCodeBlock();
 
 		addCodeLine("\t; printing a value\n", blk);
-		// message length, all messages are 4 bytes (word)
-		addCodeLine("\tmov\tedx, 4\n", blk); 
-		// file descriptor (stdout)
-		addCodeLine("\tmov\teax, 4\n", blk);
-		// system call number 
-		addCodeLine("\tmov\tebx, 1\n", blk); 
+		// setup stack frame 
+		addCodeLine("\tpush rbp\n", blk); 
+		// move printing format
+		addCodeLine("\tmov rdi, p_fmt\n", blk);
+		addCodeLine("\tmov rax, 0\n", blk);
+		
+		if( strcmp(ptr->childL->next->id->val, "<var>") == 0 ) {
+			var = ptr->childL->next;
+			if( strcmp(var->childL->id->val, "ID") == 0 ) {
+				if(var->childL->se->isArray == 0) {
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov rsi, [%s]\n", var->childL->se->temporary);
+					addCodeLine(buffer, blk);
+				}
+				else {
+					// handle arrays
+				}
+			}
+			else if( strcmp(var->childL->id->val, "RNUM") == 0 ) {
+				memset(buffer, 0, 100);
+				sprintf(buffer, "\tmov rsi, dword %s\n", var->childL->tptr->val);
+				addCodeLine(buffer, blk);	
+			}
+			else if( strcmp(var->childL->id->val, "NUM") == 0 ) {
+				memset(buffer, 0, 100);
+				sprintf(buffer, "\tmov rsi, dword %s\n", var->childL->tptr->val);
+				addCodeLine(buffer, blk);
+			}
+		}
 
-		// *********************************** THIS HAS TO BE WORKED OUT ******************************************
-		// message to write is copied to register ecx 
-		addCodeLine("\tmov\tecx, 1\n", blk); 
-
-		addCodeLine("\tint\t80h\n", blk);
+		addCodeLine("\tcall printf\n", blk);
+		addCodeLine("\tpop rbp\n", blk);
 
 
 	}
@@ -753,15 +782,19 @@ int codeGenExprRec(treeNode * ptr) {
 		strcpy(tmpl2, LABEL_BUF);
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tjmp %s\n", tmpl2);
+		sprintf(buffer, "\tjmp %s\n", tmpl1);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "%s :\n", tmpl2);
+		sprintf(buffer, "%s :\n", tmpl1);
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
 		sprintf(buffer, "\tmov [%s], dword 0\n", ptr->temporary);
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "%s :\n", tmpl2);
 		addCodeLine(buffer, blk);
 
 		mergeCodeBlocks(blk, ptr->childL->blk);
@@ -893,7 +926,7 @@ int codeGenIter(treeNode * ptr) {
 		// code addition for the FOR construct
 		addCodeLine("\t;iterative for loop\n", blk);
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tmov [%s], dword %d\n", child->next->se->temporary, atoi(child->next->next->childR->tptr->val) - atoi(child->next->next->childL->tptr->val) );
+		sprintf(buffer, "\tmov [%s], dword %d\n", child->next->se->temporary, atoi(child->next->next->childL->tptr->val) );
 		addCodeLine(buffer, blk);
 		
 		getLabel();
@@ -913,11 +946,15 @@ int codeGenIter(treeNode * ptr) {
 		}
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tdec dword [%s]\n", child->next->se->temporary );
+		sprintf(buffer, "\tinc dword [%s]\n", child->next->se->temporary );
 		addCodeLine(buffer, blk);
 
 		memset(buffer, 0, 100);
-		sprintf(buffer, "\tjnz %s\n", l1 );
+		sprintf(buffer, "\tcmp [%s], dword %d\n", child->next->se->temporary, atoi(child->next->next->childR->tptr->val) + 1 );
+		addCodeLine(buffer, blk);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tjne %s\n", l1 );
 		addCodeLine(buffer, blk);
 
 	}
@@ -1086,6 +1123,12 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 		codeBlock * header;
 		header = createCodeBlock();
 
+		// extern 
+		addCodeLine("\n", header);
+		addCodeLine("extern printf, scanf\n", header);
+		addCodeLine("global main\n", header);
+		
+		// bss section
 		addCodeLine("\n", header);
 		addCodeLine("section .bss\n", header);
 		for(int i=1;i<TEMP_COUNT;i++) {
@@ -1094,12 +1137,21 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 			addCodeLine(buffer, header);
 		}
 		addCodeLine("\n", header);
+
+		// data section
+		addCodeLine("\n", header);
+		addCodeLine("section .data\n", header);
+		addCodeLine("\ts_fmt:    db \"\%d\", 0\n", header);
+		addCodeLine("\tp_fmt:    db \"\%d\", 10, 0\n", header);
+		addCodeLine("\n", header);
+
+		// text section
 		addCodeLine("section .text\n", header);
-		addCodeLine("\tglobal _start\n", header);
-		addCodeLine("_start : \n", header);
+		addCodeLine("main : \n", header);
 
 		mergeCodeBlocks(modDef->childL->blk, header);
 
+		// exit code
 		addCodeLine("\n\n;exit code\n" , modDef->childL->blk);
 		addCodeLine("mov eax, 1\n" , modDef->childL->blk);
 		addCodeLine("mov ebx, 0\n" , modDef->childL->blk);

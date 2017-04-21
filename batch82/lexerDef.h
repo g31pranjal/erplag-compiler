@@ -10,37 +10,47 @@ Tanaya Jha (2013B3A7304P)
 #define RESET   "\033[0m"
 #endif
 
+
 #ifndef BOLDBLACK
-#define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
+// for bold text, black colored
+#define BOLDBLACK   "\033[1m\033[30m"      
 #endif
 
 #ifndef BOLDRED
-#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
+// for bold text, red colored
+#define BOLDRED     "\033[1m\033[31m" 
 #endif
 
 #ifndef BOLDGREEN
-#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
+// for bold text, green colored
+#define BOLDGREEN   "\033[1m\033[32m"   
 #endif
 
 #ifndef BOLDYELLOW
-#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
+// for bold text, yellow colored
+#define BOLDYELLOW  "\033[1m\033[33m"    
 #endif
 
 #ifndef BOLDBLUE
-#define BOLDBLUE    "\033[1m\033[34m"      /* Bold Blue */
+// for bold text, blue colored
+#define BOLDBLUE    "\033[1m\033[34m"  
 #endif
 
 #ifndef BOLDMAGENTA
-#define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
+// for bold text, magenta colored
+#define BOLDMAGENTA "\033[1m\033[35m"     
 #endif
 
 #ifndef BOLDCYAN
-#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
+// for bold text, cyan colored
+#define BOLDCYAN    "\033[1m\033[36m"  
 #endif
 
 #ifndef BOLDWHITE
-#define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
+// for bold text, white colored
+#define BOLDWHITE   "\033[1m\033[37m"   
 #endif
+
 
 
 
