@@ -17,6 +17,7 @@ Tanaya Jha (2013B3A7304P)
 
 int LABEL = 1;
 int TEMP_COUNT = 1;
+int TEMP_LOCAL = 1;
 
 char TEMP_BUF[5];
 char LABEL_BUF[10];
@@ -112,10 +113,14 @@ int codeGenIO(treeNode * ptr) {
 		addCodeLine("\tmov rdi, s_fmt\n", blk);
 		addCodeLine("\tmov rax, 0\n", blk);
 		
+
+		// handle arrays
+
+		
 		memset(buffer, 0, 100);
 		sprintf(buffer, "\tmov rsi, %s\n", ptr->childL->next->se->temporary);
 		addCodeLine(buffer, blk);
-
+		
 		addCodeLine("\tcall scanf\n", blk);
 		addCodeLine("\tpop rbp\n", blk);
 
@@ -140,7 +145,21 @@ int codeGenIO(treeNode * ptr) {
 					addCodeLine(buffer, blk);
 				}
 				else {
-					// handle arrays
+
+					if( strcmp(var->childL->next->childL->id->val, "NUM") == 0 ) {
+						memset(buffer, 0, 100);
+						sprintf(buffer, "\tmov ebx, dword %s\n", var->childL->next->childL->tptr->val);
+						addCodeLine(buffer, blk);							
+					}
+					else {
+						memset(buffer, 0, 100);
+						sprintf(buffer, "\tmov ebx, [%s]\n", var->childL->next->childL->se->temporary);
+						addCodeLine(buffer, blk);							
+					}
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov rsi, [%s + 4*ebx]\n", var->childL->se->temporary);
+					addCodeLine(buffer, blk);	
 				}
 			}
 			else if( strcmp(var->childL->id->val, "RNUM") == 0 ) {
@@ -173,7 +192,7 @@ int codeGenAssg(treeNode * ptr) {
 	codeBlock * blk;
 	blk = createCodeBlock();
 
-	treeNode * child;
+	treeNode * child, * exp, *ind;
 	child = ptr->childL;
 
 	if( strcmp(child->next->id->val, "<expression>") == 0 ) {
@@ -187,12 +206,42 @@ int codeGenAssg(treeNode * ptr) {
 		sprintf(buffer, "\tmov [%s], eax\n", ptr->childL->se->temporary);
 		addCodeLine(buffer, blk);
 	
+		mergeCodeBlocks(blk, child->next->blk);
 	}
 	else {
-		// handle array element 
+		ind = child->next;
+		exp = child->next->next;
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", exp->temporary);
+		addCodeLine(buffer, blk);
+
+		if( strcmp(ind->childL->id->val, "ID") == 0 ) {
+
+			memset(buffer, 0, 100);
+			sprintf(buffer, "\tmov ebx, [%s]\n", ind->childL->se->temporary);
+			addCodeLine(buffer, blk);
+			memset(buffer, 0, 100);
+			sprintf(buffer, "\tmov [%s + 4*ebx], eax\n", ptr->childL->se->temporary);
+			addCodeLine(buffer, blk);
+
+		}
+		else {
+
+			memset(buffer, 0, 100);
+			sprintf(buffer, "\tmov ebx, dword %s\n", ind->childL->tptr->val);
+			addCodeLine(buffer, blk);
+
+			memset(buffer, 0, 100);
+			sprintf(buffer, "\tmov [%s + 4*ebx], eax\n", ptr->childL->se->temporary);
+			addCodeLine(buffer, blk);
+
+		}
+
+		mergeCodeBlocks(blk, child->next->next->blk);
+
 	}
 
-	mergeCodeBlocks(blk, child->next->blk);
 	ptr->blk = blk;
 	ptr->parent->blk = blk;
 }
@@ -870,7 +919,44 @@ int codeGenExprRec(treeNode * ptr) {
 				strcpy(ptr->temporary, ptr->childL->se->temporary);
 			}
 			else {
-				// handle arrays
+				treeNode * ind;
+				ind = ptr->childL->next;
+				if( strcmp(ind->childL->id->val, "ID") == 0 ) {
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov ebx, [%s]\n", ind->childL->se->temporary);
+					addCodeLine(buffer, blk);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov eax, [%s + 4*ebx]\n", ptr->childL->se->temporary);
+					addCodeLine(buffer, blk);
+
+					getTemporary();
+					strcpy(ptr->temporary, TEMP_BUF);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
+					addCodeLine(buffer, blk);
+
+				}
+				else {
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov ebx, dword %s\n", ind->childL->tptr->val);
+					addCodeLine(buffer, blk);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov eax, [%s + 4*ebx]\n", ptr->childL->se->temporary);
+					addCodeLine(buffer, blk);
+
+					getTemporary();
+					strcpy(ptr->temporary, TEMP_BUF);
+
+					memset(buffer, 0, 100);
+					sprintf(buffer, "\tmov [%s], eax\n", ptr->temporary);
+					addCodeLine(buffer, blk);
+
+				}
 			}
 		}
 		else if( strcmp(ptr->childL->id->val, "RNUM") == 0 ) {
@@ -907,7 +993,25 @@ int codeGenExpr(treeNode * ptr) {
 	}
 	else {
 		codeGenExprRec(ptr->childR);
-		// additional code (add a negative sign)
+
+		codeBlock * blk;
+		blk = createCodeBlock();
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov eax, [%s]\n", ptr->childR->temporary);
+		addCodeLine(buffer, blk);
+		
+		addCodeLine("\tneg eax\n", blk);
+		
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\tmov [%s], eax\n", ptr->childR->temporary);
+		addCodeLine(buffer, blk);
+
+		strcpy(ptr->temporary, ptr->childR->temporary);
+
+		mergeCodeBlocks(blk, ptr->childR->blk);
+
+		ptr->blk = blk;
 	}
 }
 
@@ -1077,7 +1181,7 @@ int codeGenRec(treeNode * ptr) {
 }
 
 
-int addTemporaries(symbolScope * head) {
+int addTemporaries(symbolScope * head , codeBlock * bss ) {
 
 	symbolScope * child;
 	symbolEntry * se;
@@ -1087,11 +1191,16 @@ int addTemporaries(symbolScope * head) {
 	while(se != NULL) {
 		getTemporary();
 		strcpy(se->temporary, TEMP_BUF);
+
+		memset(buffer, 0, 100);
+		sprintf(buffer, "\t%s :\tresd\t%d\n", se->temporary, se->endInd - se->startInd + 1 );
+		addCodeLine(buffer, bss);		
+
 		se = se->next;
 	}
 
 	while(child != NULL) {
-		addTemporaries(child);
+		addTemporaries(child, bss);
 		child = child->next;
 	}
 }
@@ -1101,27 +1210,41 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 
 	treeNode * modDef;
 	int i;
-	char buffer[100];
 
 	// checking the validity
 	if( head->childL != head->childR ) {
 		printf("\nCannot handle such types of source code for generating ASM.\n");
 	}
 	else {
+		
+		codeBlock * header, * bssBlk;
 
+		header = createCodeBlock();
+		bssBlk = createCodeBlock();
+		
+		addCodeLine("\n", bssBlk);
+		addCodeLine("section .bss\n", bssBlk);
 		
 		// map variables to temporaries 
-		addTemporaries(sHead->childL);
+		addTemporaries(sHead->childL, bssBlk);
 		
+		TEMP_LOCAL = TEMP_COUNT;
+
 		// recurse over the AST to generate code blocks
 		modDef = head->childL->childL;
 		codeGenRec(modDef);
 
 		modDef->blk = modDef->childL->blk;
 
+
+		for(i=TEMP_LOCAL;i<TEMP_COUNT;i++) {
+			memset(buffer, 0, 100);
+			sprintf(buffer, "\tri%d :\tresd\t1\n", i);
+			addCodeLine(buffer, bssBlk);
+		}
+
+
 		// prepare header
-		codeBlock * header;
-		header = createCodeBlock();
 
 		// extern 
 		addCodeLine("\n", header);
@@ -1130,13 +1253,10 @@ int codeGenInit(treeNode * head, symbolScope * sHead, FILE * fp) {
 		
 		// bss section
 		addCodeLine("\n", header);
-		addCodeLine("section .bss\n", header);
-		for(int i=1;i<TEMP_COUNT;i++) {
-			memset(buffer, 0, 100);
-			sprintf(buffer, "\tri%d : \tresd\t1\n", i);
-			addCodeLine(buffer, header);
-		}
-		addCodeLine("\n", header);
+		
+
+		header->bot->next = bssBlk->top;
+		header->bot = bssBlk->bot;
 
 		// data section
 		addCodeLine("\n", header);
