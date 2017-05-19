@@ -6,6 +6,10 @@ Pranjal Gupta (2013B4A7470P)
 Tanaya Jha (2013B3A7304P)
 */
 
+/*
+	this module takes in the parse tree and 1). Delete all the irrelevant tokens, 2). Changes the structure of <expressions> to infix notation (for proper checking and evaluation), 3). removes chaining in tree and 4). removes empty non-terminals. 
+*/
+
 #include <stdio.h>
 #include "parserDef.h"
 

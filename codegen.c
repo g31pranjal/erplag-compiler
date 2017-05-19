@@ -6,6 +6,10 @@ Pranjal Gupta (2013B4A7470P)
 Tanaya Jha (2013B3A7304P)
 */
 
+/*
+	Generates the NASM-assembly code of the source code. 
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

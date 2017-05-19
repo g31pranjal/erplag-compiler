@@ -42,7 +42,7 @@
 <optional>				:		EMPTY
 <idList>				:		ID <idListRec>
 <idListRec>				:		COMMA ID <idListRec>
-<idListRec>				:		EMPTY 
+<idListRec>				:		EMPTY
 <expression>			:		<arithOrBoolExpr>
 <expression>			:		MINUS BO <arithmeticExpr> BC
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
@@ -57,6 +57,8 @@
 <term>					:		<factor> <termRec>
 <termRec>				:		<md> <factor> <termRec>
 <termRec>				:		EMPTY
+
+
 <factor>				:		BO <arithOrBoolExpr> BC
 <factor>				:		<var>
 <var>					:		ID <whichId>

@@ -6,6 +6,12 @@ Pranjal Gupta (2013B4A7470P)
 Tanaya Jha (2013B3A7304P)
 */
 
+/*
+	lexical analyzer reads the source code in HLL as a stream of charaters and converts sequence of characters to meaningful tokens. 
+	the tokens are passed to the parser and contains information about the line of occurance, name of the token, token id etc.
+*/
+
+
 #include <stdio.h> 
 #include <string.h>
 #include <unistd.h> 

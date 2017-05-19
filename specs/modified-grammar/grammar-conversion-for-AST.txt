@@ -1,0 +1,176 @@
+<program>					:		[<moduleDeclarations>] [<otherModules>] [<driverModule>] [<otherModules>]
+
+<!-- <moduleDeclarations>	:		<moduleDeclaration> <moduleDeclarations> -->
+
+modified
+<moduleDeclarations>		:		{ ID } 
+
+<!-- <moduleDeclarations>	:		EMPTY -->
+<!-- <moduleDeclaration>	:		DECLARE MODULE ID SEMICOL -->
+
+<!-- <otherModules>			:		<module> <otherModules> -->
+
+modified
+<otherModules>				:		{ <module> }
+
+<!-- <otherModules>			:		EMPTY -->
+
+<driverModule>				:		<!-- DRIVERDEF DRIVER PROGRAM DRIVERENDDEF --> [<moduleDef>]
+
+<!-- <module>				:		DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef> -->
+
+modified
+<module>					:		ID [<input_plist>] [<output_plist>] [<moduleDef>]
+
+<!-- <input_plist>			:		ID COLON <dataType> <input_plistRec> -->
+
+modified 
+<input_plist>				:		{ ID <dataType> }  
+
+<!-- <input_plistRec>		:		COMMA ID COLON <dataType> <input_plistRec> -->
+<!-- <input_plistRec>		:		EMPTY -->
+
+<!-- <ret>					:		RETURNS SQBO <output_plist> SQBC SEMICOL -->
+<!-- <ret>					:		EMPTY -->
+
+<!-- <output_plist>			:		ID COLON <type> <output_plistRec> -->
+
+modified
+<output_plist>				:		{ ID (INTEGER/REAL/BOOLEAN) }
+
+<!-- <output_plistRec>		:		COMMA ID COLON <type> <output_plistRec> -->
+<!-- <output_plistRec>		:		EMPTY -->
+
+<!-- <type>					:		INTEGER
+<type>						:		REAL
+<type>						:		BOOLEAN -->
+
+<!-- <dataType>				:		<type> -->
+
+modified
+<dataType>					:		(INTEGER/REAL/BOOLEAN)
+
+<!-- <dataType>				:		ARRAY SQBO <range> SQBC OF <type> -->
+
+modified
+<dataType>					:		ARRAY <!-- SQBO --> <range> <!-- SQBC OF --> (INTEGER/REAL/BOOLEAN)
+
+<moduleDef>					:		<!-- START --> [<statements>] <!-- END -->
+
+<!-- <statements>			:		<statement> <statements> -->
+
+modified
+<statements>				:		{ <ioStmt> / <simpleStmt> / <declareStmt> / <condionalStmt> / <iterativeStmt> }
+ 
+<!-- <statements>			:		EMPTY -->
+<!-- 
+<statement>					:		<ioStmt>
+<statement>					:		<simpleStmt>
+<statement>					:		<declareStmt>
+<statement>					:		<condionalStmt>
+<statement>					:		<iterativeStmt> -->
+<!-- <statement>			:		SEMICOL -->
+
+<!-- <ioStmt>				:		GET_VALUE BO ID <whichId> BC SEMICOL -->
+
+modified
+<ioStmt>					:		GET_VALUE <!-- BO --> ID [<index>] <!-- BC SEMICOL -->
+
+<ioStmt>					:		PRINT <!-- BO --> <var> <!-- BC SEMICOL -->
+
+<!-- <whichId>				:		SQBO <index> SQBC -->
+<!-- <whichId>				:		EMPTY -->
+
+<index>						:		NUM / ID
+
+<simpleStmt>				:		<assignmentStmt>
+<simpleStmt>				:		<moduleReuseStmt>
+
+<!-- <assignmentStmt>		:		ID <whichId> ASSIGNOP <expression> SEMICOL -->
+
+modified
+<assignmentStmt>			:		ID [<index>] <!-- ASSIGNOP --> <expression> <!-- SEMICOL -->
+
+<moduleReuseStmt>			:		[<idList>] <!-- USE MODULE --> ID <!-- WITH PARAMETERS --> <idList> <!-- SEMICOL -->
+
+<!-- <optional>				:		SQBO <idList> SQBC ASSIGNOP -->
+<!-- <optional>				:		EMPTY -->
+
+<!-- <idList>				:		ID <idListRec> -->
+
+modified 
+<idList>					:		{ ID }
+
+<!-- <idListRec>			:		COMMA ID <idListRec> -->
+<!-- <idListRec>			:		EMPTY  -->
+
+
+<!-- <expression>			:		<arithOrBoolExpr> --> 
+<!-- <expression>			:		MINUS BO <arithmeticExpr> BC -->
+
+<arithOrBoolExpr> 			: 		<anyTerm> <arithOrBoolExprRec>
+<arithOrBoolExprRec> 		:		(AND / OR) <anyTerm> <arithOrBoolExprRec>
+<!-- <arithOrBoolExprRec> 	:		EMPTY -->
+
+<anyTerm> 					:		<arithmeticExpr> <anyTermRec>
+<anyTermRec> 				:		(LT / LE / GT / GE / NE / EQ) <arithmeticExpr> <anyTermRec>
+<!-- <anyTermRec> 			:		EMPTY -->
+
+<arithmeticExpr>			:		<term> <arithmeticExprRec>
+<arithmeticExprRec>			:		(PLUS / MINUS) <term> <arithmeticExprRec>
+<!-- <arithmeticExprRec>	:		EMPTY  -->
+
+<term>						:		<factor> <termRec>
+<termRec>					:		(MUL / DIV) <factor> <termRec>
+<!-- <termRec>				:		EMPTY -->
+
+<factor>					:		<!-- BO --> <arithOrBoolExpr> <!-- BC -->
+<factor>					:		<var>
+
+<expression>				:		(AND / OR / LT / LE / GT / GE / NE / EQ / PLUS / MINUS / MUL / DIV / <var>)
+<expression>				:		MINUS (PLUS / MINUS / MUL / DIV / <var>)
+
+AND / OR					:		(AND / OR / LT / LE / GT / GE / NE / EQ / PLUS / MINUS / MUL / DIV / <var>)^2
+LT / LE / GT / GE / NE / EQ	:		(AND / OR / LT / LE / GT / GE / NE / EQ / PLUS / MINUS / MUL / DIV / <var>)^2
+PLUS / MINUS				:		(AND / OR / LT / LE / GT / GE / NE / EQ / PLUS / MINUS / MUL / DIV / <var>)^2
+MUL / DIV					:		(AND / OR / LT / LE / GT / GE / NE / EQ / PLUS / MINUS / MUL / DIV / <var>)^2
+
+<!-- <var>					:		ID <whichId> -->
+
+modified
+<var>						:		(ID [<index>] / NUM / RNUM)
+
+<!-- <pm>					:		PLUS
+<pm>						:		MINUS
+<md>						:		MUL
+<md>						:		DIV
+<logicalOp>					:		AND
+<logicalOp>					:		OR
+<relationalOp>				:		LT
+<relationalOp>				:		LE
+<relationalOp>				:		GT
+<relationalOp>				:		GE
+<relationalOp>				:		EQ
+<relationalOp>				:		NE -->
+
+<declareStmt>				:		<!-- DECLARE --> <idList> <!-- COLON --> <dataType> <!-- SEMICOL -->
+
+<condionalStmt>				:		<!-- SWITCH BO --> ID <!-- BC START --> <caseStmts> <default><!--  END -->
+
+<caseStmts>					:		<!-- CASE --> { <value> <!-- COLON --> <statements> } <!-- BREAK SEMICOL --> <!-- <caseStmtsRec> -->
+
+<!-- <caseStmtsRec>			:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec> -->
+<!-- <caseStmtsRec>			:		EMPTY -->
+
+<value>						:		(NUM / TRUE / FALSE)
+
+<default>					:		<!-- DEFAULT COLON --> <statements> <!-- BREAK SEMICOL -->
+
+<!-- <default>				:		EMPTY -->
+
+<iterativeStmt>				:		FOR <!-- BO --> ID <!-- IN --> <range> <!-- BC START --> [<statements>] <!-- END -->
+
+<iterativeStmt>				:		WHILE <!-- BO --> <arithOrBoolExpr> <!-- BC START --> [<statements>] <!-- END -->
+
+<range>						:		NUM <!-- RANGEOP --> NUM
+

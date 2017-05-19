@@ -6,6 +6,11 @@ Pranjal Gupta (2013B4A7470P)
 Tanaya Jha (2013B3A7304P)
 */
 
+/*
+	this module constructs the symbol-table for the corresponding AST. The symbol table has a tree structure that depicts the scoping of the blocks of code. Each node of the tree has a linked list of its locally defined variables. It also reports the errors related to redundant declaration, no declaration of variables and modules.
+*/
+
+
 #include <stdio.h>
 #include "parserDef.h"
 #include "scopeDef.h"

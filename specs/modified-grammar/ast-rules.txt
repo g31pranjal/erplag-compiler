@@ -1,0 +1,60 @@
+<program>					:		[<moduleDeclarations>] [<otherModules>] [<driverModule>] [<otherModules>]
+
+<moduleDeclarations>		:		{ID} 
+
+<otherModules>				:		{<module>}
+
+<driverModule>				:		[<moduleDef>] 
+
+<module>					:		ID [<input_plist>] [<output_plist>] [<moduleDef>]
+
+<input_plist>				:		{ID <dataType>}  
+
+<output_plist>				:		{ID (INTEGER/REAL/BOOLEAN)}
+
+<dataType>					:		(INTEGER/REAL/BOOLEAN)
+<dataType>					:		ARRAY <range> (INTEGER/REAL/BOOLEAN)
+
+<moduleDef>					:		[<statements>]
+
+<statements>				:		{<ioStmt>/<simpleStmt>/<declareStmt>/<condionalStmt>/<iterativeStmt>}
+
+<ioStmt>					:		GET_VALUE ID [<index>]
+<ioStmt>					:		PRINT <var>
+
+<index>						:		NUM/ID
+
+<simpleStmt>				:		<assignmentStmt>
+<simpleStmt>				:		<moduleReuseStmt>
+
+<assignmentStmt>			:		ID [<index>] <expression> 
+
+<moduleReuseStmt>			:		[<idList>] ID <idList>
+
+<idList>					:		{ID}
+
+<expression>				:		(AND/OR/LT/LE/GT/GE/NE/EQ/PLUS/MINUS/MUL/DIV/<var>)
+<expression>				:		MINUS (PLUS/MINUS/MUL/DIV/<var>)
+
+AND/OR						:		(AND/OR/LT/LE/GT/GE/NE/EQ/PLUS/MINUS/MUL/DIV/<var>)^2
+LT/LE/GT/GE/NE/EQ			:		(AND/OR/LT/LE/GT/GE/NE/EQ/PLUS/MINUS/MUL/DIV/<var>)^2
+PLUS/MINUS					:		(AND/OR/LT/LE/GT/GE/NE/EQ/PLUS/MINUS/MUL/DIV/<var>)^2
+MUL/DIV						:		(AND/OR/LT/LE/GT/GE/NE/EQ/PLUS/MINUS/MUL/DIV/<var>)^2
+
+<var>						:		(ID [<index>]/NUM/RNUM)
+
+<declareStmt>				:		<idList> <dataType> 
+
+<condionalStmt>				:		ID <caseStmts> <default>
+
+<caseStmts>					:		{<value> <statements>}
+
+<value>						:		(NUM/TRUE/FALSE)
+
+<default>					:		<statements>
+
+<iterativeStmt>				:		FOR ID <range> [<statements>]
+<iterativeStmt>				:		WHILE <arithOrBoolExpr> [<statements>]
+
+<range>						:		NUM NUM
+

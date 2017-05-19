@@ -29,12 +29,7 @@
 <statement>				:		<iterativeStmt>
 <statement>				:		SEMICOL
 <ioStmt>				:		GET_VALUE BO ID <whichId> BC SEMICOL
-<ioStmt>				:		PRINT BO <print_val> BC SEMICOL
-<print_val>				:		ID <whichId>
-<print_val>				:		NUM
-<print_val>				:		RNUM
-<print_val>				:		TRUE
-<print_val>				:		FALSE
+<ioStmt>				:		PRINT BO <var> BC SEMICOL
 <whichId>				:		SQBO <index> SQBC
 <whichId>				:		EMPTY
 <index>					:		NUM
@@ -47,7 +42,7 @@
 <optional>				:		EMPTY
 <idList>				:		ID <idListRec>
 <idListRec>				:		COMMA ID <idListRec>
-<idListRec>				:		EMPTY 
+<idListRec>				:		EMPTY
 <expression>			:		<arithOrBoolExpr>
 <expression>			:		MINUS BO <arithmeticExpr> BC
 <arithOrBoolExpr> 		: 		<anyTerm> <arithOrBoolExprRec>
@@ -62,11 +57,15 @@
 <term>					:		<factor> <termRec>
 <termRec>				:		<md> <factor> <termRec>
 <termRec>				:		EMPTY
+
+
 <factor>				:		BO <arithOrBoolExpr> BC
 <factor>				:		<var>
 <var>					:		ID <whichId>
 <var>					:		NUM
 <var>					:		RNUM
+<var>					:		TRUE
+<var>					:		FALSE
 <pm>					:		PLUS
 <pm>					:		MINUS
 <md>					:		MUL
@@ -80,7 +79,7 @@
 <relationalOp>			:		EQ
 <relationalOp>			:		NE
 <declareStmt>			:		DECLARE <idList> COLON <dataType> SEMICOL
-<condionalStmt>			:		SWITCH BO <expression> BC START <caseStmts> <default> END
+<condionalStmt>			:		SWITCH BO ID BC START <caseStmts> <default> END
 <caseStmts>				:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec>
 <caseStmtsRec>			:		CASE <value> COLON <statements> BREAK SEMICOL <caseStmtsRec>
 <caseStmtsRec>			:		EMPTY

@@ -6,6 +6,11 @@ Pranjal Gupta (2013B4A7470P)
 Tanaya Jha (2013B3A7304P)
 */
 
+/*
+	Driver module, to run modules separately on the source code.
+*/
+
+
 #include <stdio.h>
 #include "lexerDef.h"
 #include "parserDef.h"
@@ -101,7 +106,7 @@ int main(int argc, char ** argv) {
 				}
 
 				if(!ASTconstruct)
-					printParseTreeOrig(head);
+					;// printParseTreeOrig(head);
 				else {
 					printf("Cannot print parse tree after AST construction since the same structure is altered.\n");
 				}
