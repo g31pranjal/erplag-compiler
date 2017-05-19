@@ -8,16 +8,15 @@
 - **AST Construction (ast.c)** : this module takes in the parse tree and 1). Delete all the irrelevant tokens, 2). Changes the structure of <expressions> to infix notation (for proper checking and evaluation), 3). removes chaining in tree and 4). removes empty non-terminals. 
 - **Symbol Table and Scoping (scope.c)** : 	this module constructs the symbol-table for the corresponding AST. The symbol table has a tree structure that depicts the scoping of the blocks of code. Each node of the tree has a linked list of its locally defined variables. It also reports the errors related to redundant declaration, no declaration of variables and modules. 
 - **Type Checker and Semantic Analyser (semantics.c)** : this module performs semantic checks on the AST for verifiying semantic correctness of the source code. It also determines the correctness of the expressions.
-	
-* **Code Generation (codegen.c)** : Generates the NASM-assembly code of the source code.
+- **Code Generation (codegen.c)** : Generates the NASM-assembly code of the source code.
 
-### # Compatibility
+### # compatibility
 
 - gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
 - NASM version 2.12.01
  
 
-### # Usage
+### # usage
 
 - use `make` to compile the client and server code for the game.
 - the driver.c is compiled to the executable binary called `comiler`.
